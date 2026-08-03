@@ -1,0 +1,10 @@
+{
+  "name": "quantint-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quantint web sitesi tasarimi (Claude Design .dc.html export) - lokal statik sunucu",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}

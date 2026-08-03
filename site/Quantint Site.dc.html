@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#F6F7F9; color:#101820; font-family:'IBM Plex Sans',Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#3168B4; text-decoration:none; }
+  a:hover { color:#245090; }
+  ::selection { background:#D7E3F5; }
+  @keyframes qi-marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+  @keyframes qi-pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+  @keyframes qi-fadeup { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  [data-reveal] { opacity:0; transform:translateY(28px); transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1) !important; }
+  [data-reveal].qi-in { opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] { opacity:1 !important; transform:none !important; transition:none !important; }
+    * { animation-duration:.01s !important; animation-iteration-count:1 !important; }
+  }
+  [data-q="code"] pre { min-width:0; }
+  @media (max-width:1023px) {
+    [data-q="hero"] { grid-template-columns:1fr !important; gap:44px !important; padding:56px 28px 56px !important; }
+    [data-q="grid3"] { grid-template-columns:repeat(2,1fr) !important; }
+    [data-q="code"] { grid-template-columns:1fr !important; gap:32px !important; padding:40px 36px !important; }
+    [data-q="news"] { grid-template-columns:1fr !important; gap:28px !important; padding:40px 36px !important; }
+    [data-q="footer"] { grid-template-columns:1fr 1fr !important; gap:36px !important; }
+  }
+  @media (max-width:639px) {
+    [data-q-p] { padding-left:20px !important; padding-right:20px !important; }
+    [data-q="navbar"] { flex-wrap:wrap; height:auto !important; padding:10px 16px 12px !important; justify-content:center !important; }
+    [data-q="nav"] { flex-wrap:wrap; justify-content:center; }
+    [data-q="hero"] { padding:44px 20px 48px !important; gap:36px !important; }
+    [data-q="h1"] { font-size:37px !important; }
+    [data-q="pageh1"] { font-size:31px !important; }
+    [data-q="grid3"] { grid-template-columns:1fr !important; }
+    [data-q="code"] { padding:28px 22px !important; }
+    [data-q="news"] { padding:28px 22px !important; }
+    [data-q="postrow"] { grid-template-columns:1fr !important; gap:10px !important; padding:20px !important; }
+    [data-q="postmeta"] { text-align:left !important; white-space:normal !important; }
+    [data-q="about"] { grid-template-columns:1fr !important; gap:32px !important; justify-items:center; }
+    [data-q="about"] > div:last-child { justify-self:stretch; }
+    [data-q="footer"] { grid-template-columns:1fr !important; gap:32px !important; }
+    [data-q="footbar"] { flex-wrap:wrap; gap:6px; justify-content:center !important; }
+    [data-q="splashtxt"] { font-size:40px !important; }
+    h2 { font-size:24px !important; }
+  }
+</style>
+</helmet>
+
+<div lang="{{ lang }}" style="min-height:100vh; display:flex; flex-direction:column;">
+
+  <!-- ======= SPLASH ======= -->
+  <sc-if value="{{ splashActive }}">
+    <div style="position:fixed; inset:0; z-index:200; background:#F6F7F9; opacity:{{ splashOpacity }}; transition:opacity .5s ease; pointer-events:{{ splashPointer }};">
+      <div ref="{{ splashOriginRef }}" style="position:absolute; left:50%; top:50%; width:0; height:0;">
+        <div style="position:absolute; left:0; top:0; width:0; height:0; transform:{{ qTransform }}; transition:transform 1.15s cubic-bezier(.55,.05,.3,1); will-change:transform;">
+          <sc-for list="{{ splashDots }}" as="d" hint-placeholder-count="9">
+            <span style="position:absolute; left:{{ d.left }}px; top:{{ d.top }}px; width:{{ d.size }}px; height:{{ d.size }}px; border-radius:50%; background:{{ d.color }}; transform:{{ d.transform }}; transition:transform .8s cubic-bezier(.55,0,.25,1); transition-delay:{{ d.delay }}; will-change:transform;"></span>
+          </sc-for>
+        </div>
+      </div>
+      <div data-q="splashtxt" style="position:absolute; left:50%; top:50%; transform:translate(0,-50%); margin-left:{{ splashTextLeft }}px; font-size:60px; font-weight:600; letter-spacing:-0.02em; color:#101820; opacity:{{ splashTextOpacity }}; transition:opacity .6s ease; white-space:nowrap;">quantint<span style="color:#3168B4;">.</span></div>
+    </div>
+  </sc-if>
+
+  <!-- ======= NAV ======= -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(246,247,249,.88); backdrop-filter:blur(12px); border-bottom:1px solid #E4E8EE;">
+    <div data-q="navbar" style="max-width:1160px; margin:0 auto; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; gap:24px;">
+      <div onClick="{{ goHome }}" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+        <svg ref="{{ navLogoRef }}" width="34" height="34" viewBox="0 0 64 64" style="opacity:{{ navLogoOpacity }}; transition:opacity .3s ease;">
+          <circle cx="30" cy="5" r="4.9" fill="#101820"></circle>
+          <circle cx="47.7" cy="12.3" r="4.9" fill="#101820"></circle>
+          <circle cx="55" cy="30" r="4.9" fill="#101820"></circle>
+          <circle cx="30" cy="55" r="4.9" fill="#101820"></circle>
+          <circle cx="12.3" cy="47.7" r="4.9" fill="#101820"></circle>
+          <circle cx="5" cy="30" r="4.9" fill="#101820"></circle>
+          <circle cx="12.3" cy="12.3" r="4.9" fill="#101820"></circle>
+          <circle cx="47.7" cy="47.7" r="4.9" fill="#3168B4"></circle>
+          <circle cx="59.1" cy="59.1" r="4.9" fill="#3168B4" style="animation:qi-pulse 2.6s ease-in-out infinite;"></circle>
+        </svg>
+        <span style="font-size:22px; font-weight:600; letter-spacing:-0.02em;">quantint<span style="color:#3168B4;">.</span></span>
+      </div>
+      <nav data-q="nav" style="display:flex; align-items:center; gap:8px;">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="3">
+          <span onClick="{{ n.onClick }}" style="padding:8px 14px; border-radius:8px; font-size:15px; font-weight:{{ n.weight }}; color:{{ n.color }}; background:{{ n.bg }}; cursor:pointer;" style-hover="color:#101820; background:#EBEEF3;">{{ n.label }}</span>
+        </sc-for>
+        <span style="width:1px; height:22px; background:#DCE1E8; margin:0 8px;"></span>
+        <span onClick="{{ setTR }}" style="font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 9px; border-radius:6px; cursor:pointer; color:{{ trColor }}; background:{{ trBg }};" style-hover="color:#101820;">TR</span>
+        <span onClick="{{ setEN }}" style="font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 9px; border-radius:6px; cursor:pointer; color:{{ enColor }}; background:{{ enBg }};" style-hover="color:#101820;">EN</span>
+        <span onClick="{{ scrollToNews }}" style="padding:8px 18px; margin-left:4px; border-radius:8px; font-size:14.5px; font-weight:600; color:#FFFFFF; background:#3168B4; cursor:pointer; white-space:nowrap;" style-hover="background:#28568F;">{{ L.navSubscribe }}</span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ======= TICKER ======= -->
+  <sc-if value="{{ showTicker }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#101820; overflow:hidden; height:38px; display:flex; align-items:center;">
+      <div style="display:flex; gap:0; width:max-content; animation:qi-marquee 42s linear infinite;">
+        <sc-for list="{{ tickerLoop }}" as="tk" hint-placeholder-count="8">
+          <span style="display:inline-flex; align-items:center; gap:8px; padding:0 26px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#C7CFDA; white-space:nowrap;">
+            <span style="color:#8A94A3;">{{ tk.sym }}</span>
+            <span style="color:#EDF0F4;">{{ tk.px }}</span>
+            <span style="color:{{ tk.color }};">{{ tk.chg }}</span>
+          </span>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ======= HOME ======= -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <main style="flex:1;">
+
+      <!-- hero -->
+      <section style="border-bottom:1px solid #E4E8EE; background:linear-gradient(180deg,#FBFCFD 0%,#F6F7F9 100%);">
+        <div data-q="hero" style="max-width:1160px; margin:0 auto; padding:84px 32px 76px; display:grid; grid-template-columns:1.05fr .95fr; gap:64px; align-items:center;">
+          <div style="animation:qi-fadeup .7s ease both;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:#3168B4; margin-bottom:20px;">{{ L.kicker }}</div>
+            <h1 data-q="h1" style="margin:0 0 22px; font-size:56px; line-height:1.06; font-weight:700; letter-spacing:-0.03em; text-wrap:balance;">{{ L.heroTitle1 }}<br><span style="color:#3168B4;">{{ L.heroTitle2 }}</span></h1>
+            <p style="margin:0 0 34px; font-size:18px; line-height:1.65; color:#4A5568; max-width:46ch; text-wrap:pretty;">{{ L.heroSub }}</p>
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+              <span onClick="{{ goBlog }}" style="display:inline-flex; align-items:center; gap:10px; background:#101820; color:#FFFFFF; padding:13px 26px; border-radius:9px; font-size:15.5px; font-weight:600; cursor:pointer; transition:background .2s, transform .2s;" style-hover="background:#3168B4; transform:translateY(-2px);">{{ L.ctaPosts }} →</span>
+              <span onClick="{{ goAbout }}" style="display:inline-flex; align-items:center; background:#FFFFFF; color:#101820; border:1px solid #DCE1E8; padding:13px 26px; border-radius:9px; font-size:15.5px; font-weight:600; cursor:pointer; transition:border-color .2s, transform .2s;" style-hover="border-color:#3168B4; transform:translateY(-2px);">{{ L.ctaAbout }}</span>
+            </div>
+          </div>
+          <div style="animation:qi-fadeup .7s .15s ease both;">
+            <div style="background:#FFFFFF; border:1px solid #E4E8EE; border-radius:14px; padding:18px 18px 12px; box-shadow:0 20px 50px -30px rgba(16,24,32,.25);">
+              <canvas ref="{{ heroCanvasRef }}" width="1040" height="680" style="width:100%; height:auto; display:block; border-radius:8px;"></canvas>
+              <div style="display:flex; justify-content:space-between; padding:10px 4px 4px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#8A94A3;">
+                <span>fig. 01 — {{ L.figCaption }}</span>
+                <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:7px; height:7px; border-radius:50%; background:#3168B4; animation:qi-pulse 1.8s ease-in-out infinite; display:inline-block;"></span>{{ L.live }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- code showcase -->
+      <section data-q-p="1" style="max-width:1160px; margin:0 auto; padding:64px 32px 0; width:100%; box-sizing:border-box;">
+        <div data-q="code" data-reveal="true" style="background:#101820; border-radius:16px; display:grid; grid-template-columns:1fr 1.2fr; gap:48px; padding:52px 56px; align-items:center;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:#6E9FDD; margin-bottom:16px;">{{ L.codeKicker }}</div>
+            <h2 style="margin:0 0 16px; font-size:30px; font-weight:700; letter-spacing:-0.02em; color:#FFFFFF; text-wrap:balance;">{{ L.codeTitle }}</h2>
+            <p style="margin:0; font-size:15.5px; line-height:1.7; color:#9AA6B5; text-wrap:pretty;">{{ L.codeSub }}</p>
+          </div>
+          <pre style="margin:0; background:#0B111A; border:1px solid #223041; border-radius:12px; padding:24px 26px; overflow-x:auto; font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:1.75; color:#C7CFDA;"><span style="color:#6E9FDD;">import</span> numpy <span style="color:#6E9FDD;">as</span> np
+
+<span style="color:#6E9FDD;">def</span> <span style="color:#7FC8A9;">sharpe</span>(r, rf=<span style="color:#D9A66C;">0.0</span>, ann=<span style="color:#D9A66C;">252</span>):
+    ex = r - rf
+    <span style="color:#6E9FDD;">return</span> np.sqrt(ann) * ex.mean() / ex.std()
+
+<span style="color:#55627A;"># Kalman ile dinamik hedge oranı</span>
+<span style="color:#6E9FDD;">for</span> t <span style="color:#6E9FDD;">in</span> range(<span style="color:#D9A66C;">1</span>, n):
+    P_p = P[t-<span style="color:#D9A66C;">1</span>] + Q
+    K = P_p * x[t] / (x[t]**<span style="color:#D9A66C;">2</span> * P_p + R)
+    b[t] = b[t-<span style="color:#D9A66C;">1</span>] + K * (y[t] - x[t]*b[t-<span style="color:#D9A66C;">1</span>])
+    P[t] = (<span style="color:#D9A66C;">1</span> - K * x[t]) * P_p</pre>
+        </div>
+      </section>
+
+      <!-- featured -->
+      <section data-q-p="1" style="max-width:1160px; margin:0 auto; padding:72px 32px 12px; width:100%; box-sizing:border-box;">
+        <div data-reveal="true" style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:32px;">
+          <h2 style="margin:0; font-size:30px; font-weight:700; letter-spacing:-0.02em;">{{ L.featured }}</h2>
+          <span onClick="{{ goBlog }}" style="font-size:15px; font-weight:600; color:#3168B4; cursor:pointer;" style-hover="text-decoration:underline;">{{ L.viewAll }} →</span>
+        </div>
+        <div data-q="grid3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+          <sc-for list="{{ featured }}" as="p" hint-placeholder-count="3">
+            <article data-reveal="true" onClick="{{ goBlog }}" style="background:#FFFFFF; border:1px solid #E4E8EE; border-radius:12px; padding:26px 26px 22px; cursor:pointer; display:flex; flex-direction:column; gap:14px; transition:transform .25s, box-shadow .25s, border-color .25s;" style-hover="transform:translateY(-5px); box-shadow:0 18px 40px -24px rgba(16,24,32,.3); border-color:#C9D6E8;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:#3168B4;">{{ p.cat }}</span>
+              <h3 style="margin:0; font-size:19px; line-height:1.35; font-weight:600; letter-spacing:-0.01em; text-wrap:balance;">{{ p.title }}</h3>
+              <p style="margin:0; font-size:14.5px; line-height:1.6; color:#5B6673; flex:1;">{{ p.excerpt }}</p>
+              <div style="display:flex; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A94A3; border-top:1px solid #EEF1F5; padding-top:14px;">
+                <span>{{ p.date }}</span><span>·</span><span>{{ p.min }} {{ L.minRead }}</span>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- categories -->
+      <section data-q-p="1" style="max-width:1160px; margin:0 auto; padding:64px 32px 8px; width:100%; box-sizing:border-box;">
+        <h2 data-reveal="true" style="margin:0 0 28px; font-size:30px; font-weight:700; letter-spacing:-0.02em;">{{ L.topics }}</h2>
+        <div data-q="grid3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:18px;">
+          <sc-for list="{{ pillars }}" as="c" hint-placeholder-count="6">
+            <div data-reveal="true" onClick="{{ c.onClick }}" style="background:#FFFFFF; border:1px solid #E4E8EE; border-radius:12px; padding:22px 24px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:border-color .2s, transform .2s;" style-hover="border-color:#3168B4; transform:translateY(-3px);">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#3168B4; background:#EDF3FB; border-radius:8px; width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; flex:none;">{{ c.code }}</span>
+              <div style="font-size:16px; font-weight:600;">{{ c.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- newsletter -->
+      <section ref="{{ newsRef }}" data-q-p="1" style="max-width:1160px; margin:0 auto; padding:64px 32px 88px; width:100%; box-sizing:border-box;">
+        <div data-q="news" data-reveal="true" style="border:1px solid #E4E8EE; background:#FFFFFF; border-radius:16px; padding:52px 56px; display:grid; grid-template-columns:1.2fr 1fr; gap:48px; align-items:center;">
+          <div>
+            <h2 style="margin:0 0 12px; font-size:28px; font-weight:700; letter-spacing:-0.02em;">{{ L.newsTitle }}</h2>
+            <p style="margin:0; font-size:15.5px; line-height:1.65; color:#5B6673;">{{ L.newsSub }}</p>
+          </div>
+          <sc-if value="{{ notSubscribed }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <input placeholder="{{ L.newsPh }}" style="flex:1; border:1px solid #DCE1E8; border-radius:9px; padding:13px 16px; font-size:15px; font-family:'IBM Plex Sans',sans-serif; background:#FBFCFD; outline:none; color:#101820;">
+              <span onClick="{{ subscribe }}" style="background:#3168B4; color:#FFFFFF; padding:13px 24px; border-radius:9px; font-size:15px; font-weight:600; cursor:pointer; white-space:nowrap;" style-hover="background:#24509F;">{{ L.newsBtn }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ subscribed }}">
+            <div style="font-size:16px; font-weight:600; color:#2E7D5B; display:flex; align-items:center; gap:10px;">✓ {{ L.newsOk }}</div>
+          </sc-if>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ======= BLOG ======= -->
+  <sc-if value="{{ isBlog }}">
+    <main data-q-p="1" style="flex:1; max-width:1160px; margin:0 auto; padding:64px 32px 88px; width:100%; box-sizing:border-box;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:#3168B4; margin-bottom:14px;">{{ L.blogKicker }}</div>
+      <h1 data-q="pageh1" style="margin:0 0 36px; font-size:44px; font-weight:700; letter-spacing:-0.03em;">{{ L.blogTitle }}</h1>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:40px;">
+        <sc-for list="{{ chips }}" as="ch" hint-placeholder-count="7">
+          <span onClick="{{ ch.onClick }}" style="padding:8px 16px; border-radius:999px; font-size:13.5px; font-weight:500; cursor:pointer; border:1px solid {{ ch.border }}; background:{{ ch.bg }}; color:{{ ch.color }}; transition:border-color .2s;" style-hover="border-color:#3168B4;">{{ ch.label }}</span>
+        </sc-for>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <sc-for list="{{ filteredPosts }}" as="p" hint-placeholder-count="6">
+          <article data-q="postrow" style="background:#FFFFFF; border:1px solid #E4E8EE; border-radius:12px; padding:28px 32px; display:grid; grid-template-columns:150px 1fr auto; gap:28px; align-items:center; cursor:pointer; transition:transform .25s, box-shadow .25s, border-color .25s;" style-hover="transform:translateX(6px); box-shadow:0 14px 34px -24px rgba(16,24,32,.3); border-color:#C9D6E8;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:#3168B4;">{{ p.cat }}</span>
+            <div>
+              <h3 style="margin:0 0 8px; font-size:20px; font-weight:600; letter-spacing:-0.01em; line-height:1.3;">{{ p.title }}</h3>
+              <p style="margin:0; font-size:14.5px; line-height:1.6; color:#5B6673; max-width:72ch;">{{ p.excerpt }}</p>
+            </div>
+            <div data-q="postmeta" style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A94A3; text-align:right; white-space:nowrap;">{{ p.date }} · {{ p.min }} {{ L.minRead }}</div>
+          </article>
+        </sc-for>
+      </div>
+      <div ref="{{ newsRef }}" data-q="news" style="margin-top:56px; border:1px solid #E4E8EE; background:#FFFFFF; border-radius:16px; padding:52px 56px; display:grid; grid-template-columns:1.2fr 1fr; gap:48px; align-items:center;">
+        <div>
+          <h2 style="margin:0 0 12px; font-size:28px; font-weight:700; letter-spacing:-0.02em;">{{ L.newsTitle }}</h2>
+          <p style="margin:0; font-size:15.5px; line-height:1.65; color:#5B6673;">{{ L.newsSub }}</p>
+        </div>
+        <sc-if value="{{ notSubscribed }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <input placeholder="{{ L.newsPh }}" style="flex:1; border:1px solid #DCE1E8; border-radius:9px; padding:13px 16px; font-size:15px; font-family:'IBM Plex Sans',sans-serif; background:#FBFCFD; outline:none; color:#101820;">
+            <span onClick="{{ subscribe }}" style="background:#3168B4; color:#FFFFFF; padding:13px 24px; border-radius:9px; font-size:15px; font-weight:600; cursor:pointer; white-space:nowrap;" style-hover="background:#24509F;">{{ L.newsBtn }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ subscribed }}">
+          <div style="font-size:16px; font-weight:600; color:#2E7D5B; display:flex; align-items:center; gap:10px;">✓ {{ L.newsOk }}</div>
+        </sc-if>
+      </div>
+    </main>
+  </sc-if>
+
+  <!-- ======= ABOUT ======= -->
+  <sc-if value="{{ isAbout }}">
+    <main data-q-p="1" style="flex:1; max-width:920px; margin:0 auto; padding:72px 32px 88px; width:100%; box-sizing:border-box;">
+      <div data-q="about" style="display:grid; grid-template-columns:200px 1fr; gap:52px; align-items:start;">
+        <div style="width:200px; height:200px;">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="author-photo" shape="circle" placeholder="portre fotoğrafı" hint-size="200px,200px"></x-import>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:#3168B4; margin-bottom:14px;">{{ L.aboutKicker }}</div>
+          <h1 data-q="pageh1" style="margin:0 0 20px; font-size:40px; font-weight:700; letter-spacing:-0.03em;">{{ L.aboutTitle }}</h1>
+          <p style="margin:0 0 18px; font-size:16.5px; line-height:1.75; color:#3D4652; text-wrap:pretty;">{{ L.aboutP1 }}</p>
+          <p style="margin:0 0 18px; font-size:16.5px; line-height:1.75; color:#3D4652; text-wrap:pretty;">{{ L.aboutP2 }}</p>
+          <p style="margin:0; font-size:16.5px; line-height:1.75; color:#3D4652; text-wrap:pretty;">{{ L.aboutP3 }}</p>
+          <div style="display:flex; gap:12px; margin-top:32px; flex-wrap:wrap;">
+            <sc-for list="{{ aboutTags }}" as="tg" hint-placeholder-count="4">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#3168B4; background:#EDF3FB; border-radius:999px; padding:7px 16px;">{{ tg }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </main>
+  </sc-if>
+
+  <!-- ======= FOOTER ======= -->
+  <footer style="background:#101820; color:#9AA6B5; margin-top:auto;">
+    <div data-q="footer" data-q-p="1" style="max-width:1160px; margin:0 auto; padding:56px 32px 40px; display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:48px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <svg width="28" height="28" viewBox="0 0 64 64">
+            <circle cx="30" cy="5" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="47.7" cy="12.3" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="55" cy="30" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="30" cy="55" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="12.3" cy="47.7" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="5" cy="30" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="12.3" cy="12.3" r="4.9" fill="#FFFFFF"></circle>
+            <circle cx="47.7" cy="47.7" r="4.9" fill="#6E9FDD"></circle>
+            <circle cx="59.1" cy="59.1" r="4.9" fill="#6E9FDD" style="animation:qi-pulse 2.6s ease-in-out infinite;"></circle>
+          </svg>
+          <span style="font-size:19px; font-weight:600; color:#FFFFFF;">quantint<span style="color:#6E9FDD;">.</span></span>
+        </div>
+        <p style="margin:0; font-size:14px; line-height:1.65; max-width:36ch;">{{ L.footerTag }}</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:24px; padding-top:20px; border-top:1px solid #223041; max-width:40ch;">
+          <div style="width:36px; height:36px; flex:none;">
+            <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="footer-avatar" shape="circle" placeholder="avatar" hint-size="36px,36px"></x-import>
+          </div>
+          <span style="font-size:13px; line-height:1.5; color:#9AA6B5; flex:1;">{{ L.footerBio }}</span>
+          <div style="display:flex; gap:10px; flex:none;">
+            <a href="#" aria-label="GitHub" style="color:#9AA6B5; display:inline-flex;" style-hover="color:#FFFFFF;"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg></a>
+            <a href="#" aria-label="LinkedIn" style="color:#9AA6B5; display:inline-flex;" style-hover="color:#FFFFFF;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.27c-.97 0-1.75-.79-1.75-1.76s.78-1.76 1.75-1.76 1.75.79 1.75 1.76-.78 1.76-1.75 1.76zm13.5 12.27h-3v-5.6c0-3.37-4-3.11-4 0v5.6h-3v-11h3v1.77c1.4-2.59 7-2.78 7 2.48v6.75z"></path></svg></a>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:#6B7684; margin-bottom:16px;">{{ L.footerNav }}</div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:14.5px;">
+          <span onClick="{{ goHome }}" style="cursor:pointer; color:#C7CFDA;" style-hover="color:#FFFFFF;">{{ L.navHome }}</span>
+          <span onClick="{{ goBlog }}" style="cursor:pointer; color:#C7CFDA;" style-hover="color:#FFFFFF;">Blog</span>
+          <span onClick="{{ goAbout }}" style="cursor:pointer; color:#C7CFDA;" style-hover="color:#FFFFFF;">{{ L.navAbout }}</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:#6B7684; margin-bottom:16px;">{{ L.footerTopics }}</div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:14.5px;">
+          <sc-for list="{{ footerCats }}" as="fc" hint-placeholder-count="4">
+            <span onClick="{{ fc.onClick }}" style="cursor:pointer; color:#C7CFDA;" style-hover="color:#FFFFFF;">{{ fc.name }}</span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #223041;">
+      <div data-q="footbar" data-q-p="1" style="max-width:1160px; margin:0 auto; padding:20px 32px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#6B7684;">
+        <span>© 2026 quantint</span>
+        <span>{{ L.footerNote }}</span>
+      </div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultLang&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;tr&quot;, &quot;options&quot;: [&quot;tr&quot;, &quot;en&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Genel&quot;}, &quot;showTicker&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Genel&quot;}}">
+class Component extends DCLogic {
+  state = { lang: null, view: 'home', filter: 'all', subscribed: false, splashPhase: 0, splashDone: false };
+
+  componentDidMount() {
+    this._raf = null;
+    this._initCanvas();
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      this.setState({ splashPhase: 7, splashDone: true });
+      this._t7 = setTimeout(() => this._startLoop && this._startLoop(), 50);
+    } else {
+      this._t1 = setTimeout(() => this.setState({ splashPhase: 1 }), 700);   // yazı silinir
+      this._t2 = setTimeout(() => this.setState({ splashPhase: 2 }), 1400);  // noktalar tam "0" çemberi olur
+      this._t3 = setTimeout(() => this.setState({ splashPhase: 3 }), 2250);  // dış mavi nokta içeri kayar, çember genişler
+      this._t4 = setTimeout(() => this.setState({ splashPhase: 4 }), 3050);  // çember açılır + 360° döner + merkeze
+      this._t5 = setTimeout(() => this.setState({ splashPhase: 5 }), 4450);  // çemberden nazikçe Q'ya geri dönülür
+      this._t6 = setTimeout(() => {
+        // hedefi ve gerçek başlangıç orijinini AYNI anda ölç — kaydırma çubuğu farkı hizayı bozmasın
+        this._navRect = this._navSvg ? this._navSvg.getBoundingClientRect() : null;
+        if (this._splashOrigin) {
+          const r = this._splashOrigin.getBoundingClientRect();
+          this._originPt = { x: r.left, y: r.top };
+        }
+        this.setState({ splashPhase: 6 });                                   // noktalar sırayla nav Q'suna yerleşir
+      }, 5750);
+      this._t7 = setTimeout(() => this.setState({ splashPhase: 7 }), 7350);  // overlay söner
+      this._t8 = setTimeout(() => {
+        this.setState({ splashDone: true });
+        if (this._startLoop) this._startLoop();
+      }, 7950);
+    }
+    this._visH = () => {
+      if (document.hidden) { if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; } }
+      else if (this.state.splashDone && this._startLoop) this._startLoop();
+    };
+    document.addEventListener('visibilitychange', this._visH);
+    this._io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const el = e.target;
+          const sibs = Array.from(el.parentElement.querySelectorAll(':scope > [data-reveal]'));
+          const i = Math.max(0, sibs.indexOf(el));
+          el.style.transitionDelay = (i * 90) + 'ms';
+          el.classList.add('qi-in');
+          this._io.unobserve(el);
+          // reveal bitince gecikmeyi ve !important geçişi temizle — hover gecikmesiz çalışsın
+          setTimeout(() => { el.style.transitionDelay = ''; el.classList.remove('qi-in'); el.removeAttribute('data-reveal'); }, i * 90 + 900);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    this._scanReveals();
+  }
+  componentDidUpdate() { this._scanReveals(); }
+  _scanReveals() {
+    if (!this._io) return;
+    clearTimeout(this._scanT);
+    this._scanT = setTimeout(() => {
+      document.querySelectorAll('[data-reveal]:not(.qi-in):not([data-qi-obs])').forEach(el => {
+        el.setAttribute('data-qi-obs', '1');
+        this._io.observe(el);
+      });
+    }, 60);
+  }
+  componentWillUnmount() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+    if (this._io) this._io.disconnect();
+    if (this._cvIO) this._cvIO.disconnect();
+    if (this._visH) document.removeEventListener('visibilitychange', this._visH);
+    [this._t1, this._t2, this._t3, this._t4, this._t5, this._t6, this._t7, this._t8].forEach(clearTimeout);
+  }
+
+  _splashVals() {
+    const DOTS = [
+      [30, 5, 4.9, '#101820'], [47.7, 12.3, 4.9, '#101820'], [55, 30, 4.9, '#101820'],
+      [47.7, 47.7, 4.9, '#3168B4'], [30, 55, 4.9, '#101820'], [12.3, 47.7, 4.9, '#101820'],
+      [5, 30, 4.9, '#101820'], [12.3, 12.3, 4.9, '#101820'],
+      [59.1, 59.1, 4.9, '#3168B4']
+    ];
+    const ph = this.state.splashPhase;
+    const mob = document.documentElement.clientWidth < 640;
+    const s = mob ? 1.45 : 2.2;
+    const shiftX = mob ? -104 : -160;
+    const rect = this._navRect;
+    // window.innerWidth kaydırma çubuğunu içerir; CSS %50 içermez — ölçülen orijini kullan
+    const o = this._originPt || { x: document.documentElement.clientWidth / 2, y: document.documentElement.clientHeight / 2 };
+    const cxS = o.x, cyS = o.y;
+    // hedef açılar (derece, -90 = tepe; y aşağı pozitif)
+    const ang8 = { 0: -90, 1: -45, 2: 0, 3: 45, 4: 90, 5: 135, 6: 180, 7: 225 };
+    const ang9 = { 0: -90, 1: -50, 2: -10, 3: 30, 8: 70, 4: 110, 5: 150, 6: 190, 7: 230 };
+    const R1 = 20 * s, R2 = 26 * s, R3 = 40 * s;
+    const onCircle = (deg, r) => {
+      const a = deg * Math.PI / 180;
+      return [r * Math.cos(a), r * Math.sin(a)];
+    };
+    const splashDots = DOTS.map((d, i) => {
+      const bx = (d[0] - 30) * s, by = (d[1] - 30) * s, size = 2 * d[2] * s;
+      let transform = 'none', delay = '0ms';
+      if (ph >= 6 && rect) {
+        const tx = (rect.left + d[0] / 64 * rect.width - cxS) - bx;
+        const ty = (rect.top + d[1] / 64 * rect.height - cyS) - by;
+        const k = rect.width / 64 / s;
+        transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + k.toFixed(3) + ')';
+        delay = (i * 90) + 'ms';
+      } else if (ph >= 5) {
+        transform = 'none'; // çemberden Q dizilimine nazik dönüş
+        delay = (i * 60) + 'ms';
+      } else if (ph >= 4) {
+        const [cx, cy] = onCircle(ang9[i], R3);
+        transform = 'translate(' + (cx - bx).toFixed(1) + 'px,' + (cy - by).toFixed(1) + 'px)';
+      } else if (ph >= 3) {
+        const [cx, cy] = onCircle(ang9[i], R2);
+        transform = 'translate(' + (cx - bx).toFixed(1) + 'px,' + (cy - by).toFixed(1) + 'px)';
+      } else if (ph >= 2) {
+        const [cx, cy] = i === 8 ? onCircle(45, R1 + 13 * s) : onCircle(ang8[i], R1);
+        transform = 'translate(' + (cx - bx).toFixed(1) + 'px,' + (cy - by).toFixed(1) + 'px)';
+        delay = i === 8 ? '0ms' : (i * 45) + 'ms';
+      }
+      return { left: bx - size / 2, top: by - size / 2, size, color: d[3], transform, delay };
+    });
+    return {
+      splashActive: !this.state.splashDone,
+      splashOpacity: ph >= 7 ? 0 : 1,
+      splashPointer: ph >= 7 ? 'none' : 'auto',
+      qTransform: ph >= 4 ? 'translateX(0px) rotate(360deg)' : 'translateX(' + shiftX + 'px) rotate(0deg)',
+      splashTextOpacity: ph >= 1 ? 0 : 1,
+      splashTextLeft: shiftX + 34 * s + (mob ? 16 : 26),
+      navLogoOpacity: this.state.splashDone || ph >= 6 ? 1 : 0,
+      splashDots,
+      navLogoRef: (el) => { if (el) this._navSvg = el; },
+      splashOriginRef: (el) => { if (el) this._splashOrigin = el; }
+    };
+  }
+
+  _initCanvas() {
+    const cv = this._canvas;
+    if (!cv) { setTimeout(() => this._initCanvas(), 300); return; }
+    if (cv === this._boundCanvas) return;
+    if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; } // eski döngüyü kopar
+    this._boundCanvas = cv;
+    const mob = document.documentElement.clientWidth < 640;
+    if (mob) { cv.width = 640; cv.height = 418; } // mobilde düşük çözünürlük yeter
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    const N = mob ? 26 : 46;
+    // ekran dışındayken döngüyü durdur
+    if (this._cvIO) this._cvIO.disconnect();
+    this._cvVisible = true;
+    this._cvIO = new IntersectionObserver((en) => {
+      this._cvVisible = en[0].isIntersecting;
+      if (this._cvVisible) { if (this._startLoop) this._startLoop(); }
+      else if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
+    });
+    this._cvIO.observe(cv);
+    const pts = Array.from({ length: N }, (_, i) => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - .5) * .45, vy: (Math.random() - .5) * .45,
+      r: 3 + Math.random() * 4.5,
+      blue: i % 5 === 0
+    }));
+    // random-walk price line
+    const M = 140;
+    let walk = [H * .55];
+    for (let i = 1; i < M; i++) walk.push(walk[i - 1] + (Math.random() - .5) * 18);
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      // grid
+      ctx.strokeStyle = 'rgba(16,24,32,.05)'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let gx = 0; gx <= W; gx += W / 8) { ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
+      for (let gy = 0; gy <= H; gy += H / 5) { ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
+      ctx.stroke();
+      // walk line
+      walk.push(walk[walk.length - 1] + (Math.random() - .5) * 18);
+      walk.shift();
+      const mn = Math.min(...walk), mx = Math.max(...walk);
+      ctx.beginPath();
+      walk.forEach((v, i) => {
+        const x = i / (M - 1) * W;
+        const y = 40 + (v - mn) / (mx - mn + 1e-9) * (H - 80);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.strokeStyle = 'rgba(49,104,180,.55)'; ctx.lineWidth = 2.5; ctx.stroke();
+      // connections — alfa kovalarına ayır, kova başına tek stroke (segment başına stroke pahalı)
+      const LINK = 130, LINK2 = LINK * LINK, alphas = [.03, .065, .1];
+      const seg = [[], [], []];
+      for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < LINK2) seg[Math.min(2, (3 * (1 - Math.sqrt(d2) / LINK)) | 0)].push(i, j);
+      }
+      ctx.lineWidth = 1;
+      for (let b = 0; b < 3; b++) {
+        const sg = seg[b];
+        if (!sg.length) continue;
+        ctx.strokeStyle = 'rgba(16,24,32,' + alphas[b] + ')';
+        ctx.beginPath();
+        for (let k = 0; k < sg.length; k += 2) { ctx.moveTo(pts[sg[k]].x, pts[sg[k]].y); ctx.lineTo(pts[sg[k + 1]].x, pts[sg[k + 1]].y); }
+        ctx.stroke();
+      }
+      // points
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.blue ? 'rgba(49,104,180,.9)' : 'rgba(16,24,32,.75)';
+        ctx.fill();
+      }
+    };
+    const loop = () => {
+      if (cv !== this._boundCanvas || !cv.isConnected) { this._raf = null; return; } // canvas söküldüyse dur
+      draw(); this._raf = requestAnimationFrame(loop);
+    };
+    this._startLoop = () => { if (!this._raf && !document.hidden && this._cvVisible !== false && this._boundCanvas && this._boundCanvas.isConnected) loop(); };
+    draw(); // splash sürerken tek statik kare — rAF döngüsü splash bitince başlar
+    if (this.state.splashDone) this._startLoop();
+  }
+
+  _strings(lang) {
+    const tr = {
+      kicker: 'Türkçe\u2019nin derinlemesine kantitatif finans kaynağı',
+      heroTitle1: 'Piyasaları', heroTitle2: 'veriyle okuyun.',
+      heroSub: 'quantint; kantitatif finans, istatistik, makine öğrenmesi ve yazılım üzerine derinlemesine Türkçe içerik üretir. Teoriden koda, makaleden uygulamaya.',
+      ctaPosts: 'Yazıları Keşfet', ctaAbout: 'Hakkında',
+      figCaption: 'nokta bulutu & rastgele yürüyüş', live: 'canlı',
+      featured: 'Öne Çıkan Yazılar', viewAll: 'Tümünü gör', minRead: 'dk okuma',
+      topics: 'Konular', postWord: 'yazı',
+      codeKicker: 'teoriden koda',
+      codeTitle: 'Her yazı, çalışan kodla gelir.',
+      codeSub: 'Modelleri sadece anlatmıyoruz; Python ile adım adım uyguluyoruz. Sharpe oranından Kalman filtresiyle dinamik hedge oranına, tüm örnekler kopyala-çalıştır hazır.',
+      newsTitle: 'Haftalık bülten', newsSub: 'Her pazartesi: yeni yazılar, seçilmiş akademik makaleler ve piyasadan kantitatif notlar. Spam yok.',
+      newsPh: 'e-posta adresiniz', newsBtn: 'Abone Ol', newsOk: 'Kaydınız alındı, hoş geldiniz!',
+      navSubscribe: 'Bültene Abone Ol', tickerNote: '15 dk gecikmeli',
+      footerBio: 'Kantitatif araştırma ve yazılım geçmişine sahip küçük bir ekip tarafından yazılıyor.',
+      blogKicker: 'arşiv', blogTitle: 'Tüm Yazılar',
+      aboutKicker: 'hakkında', aboutTitle: 'Merhaba, ben quantint.',
+      aboutP1: 'quantint, kantitatif finansı Türkçe kaynak eksikliği çekilen bir alan olmaktan çıkarmak için kuruldu. Amacımız; veri bilimi, istatistik, matematik ve yazılımı finansal piyasalar bağlamında, titizlikle ve erişilebilir bir dille aktarmak.',
+      aboutP2: 'İçerikler üç ilkeyle yazılır: matematiksel olarak doğru, kodla doğrulanabilir ve her seviyeden okuyucu için takip edilebilir. Akademik makaleleri inceler, modellerini yeniden üretir ve sonuçları şeffaf biçimde paylaşırız.',
+      aboutP3: 'Sorularınız, yazı önerileriniz veya iş birliği talepleriniz için bültene katılabilir ya da iletişime geçebilirsiniz.',
+      footerTag: 'Kantitatif finans, veri bilimi ve makine öğrenmesi üzerine Türkçe içerik.',
+      footerNav: 'sayfalar', footerTopics: 'konular',
+      navHome: 'Ana Sayfa', navAbout: 'Hakkında', navLogin: 'Giriş Yap',
+      footerNote: 'veri ile yazıldı',
+      chipAll: 'Tümü'
+    };
+    const en = {
+      kicker: 'the in-depth quantitative finance resource in Turkish',
+      heroTitle1: 'Reading markets', heroTitle2: 'through data.',
+      heroSub: 'quantint publishes in-depth writing on quantitative finance, statistics, machine learning and software. From theory to code, from paper to practice.',
+      ctaPosts: 'Explore Posts', ctaAbout: 'About',
+      figCaption: 'point cloud & random walk', live: 'live',
+      featured: 'Featured Posts', viewAll: 'View all', minRead: 'min read',
+      topics: 'Topics', postWord: 'posts',
+      codeKicker: 'from theory to code',
+      codeTitle: 'Every post ships with working code.',
+      codeSub: 'We don\u2019t just describe models \u2014 we implement them step by step in Python. From Sharpe ratios to Kalman-filtered dynamic hedge ratios, every example is copy-and-run ready.',
+      newsTitle: 'Weekly newsletter', newsSub: 'Every Monday: new posts, curated academic papers and quantitative notes from the markets. No spam.',
+      newsPh: 'your email address', newsBtn: 'Subscribe', newsOk: 'You\u2019re in \u2014 welcome!',
+      navSubscribe: 'Subscribe to Newsletter', tickerNote: '15 min delayed',
+      footerBio: 'Written by a small team with a background in quantitative research and software.',
+      blogKicker: 'archive', blogTitle: 'All Posts',
+      aboutKicker: 'about', aboutTitle: 'Hi, this is quantint.',
+      aboutP1: 'quantint was founded to close the gap in quality quantitative-finance writing. We cover data science, statistics, mathematics and software in the context of financial markets \u2014 rigorously, yet accessibly.',
+      aboutP2: 'Every piece follows three principles: mathematically sound, verifiable with code, and readable at any level. We review academic papers, reproduce their models and share the results transparently.',
+      aboutP3: 'For questions, topic suggestions or collaboration, join the newsletter or get in touch.',
+      footerTag: 'Writing on quantitative finance, data science and machine learning.',
+      footerNav: 'pages', footerTopics: 'topics',
+      navHome: 'Home', navAbout: 'About', navLogin: 'Sign In',
+      footerNote: 'written with data',
+      chipAll: 'All'
+    };
+    return lang === 'en' ? en : tr;
+  }
+
+  _posts(lang) {
+    const tr = [
+      { cat: 'Piyasa / Trading', key: 'trading', title: 'Kalman Filtresi ile Pairs Trading: Dinamik Hedge Oranı', excerpt: 'Statik OLS betası neden yetmez? Durum-uzay modeliyle zamanla değişen hedge oranını tahmin edip bir eşbütünleşme stratejisi kuruyoruz.', date: '08 Tem 2026', min: 14 },
+      { cat: 'ML & AI', key: 'ml', title: 'Transformer Mimarileri Finansal Zaman Serilerinde İşe Yarıyor mu?', excerpt: 'Attention mekanizmasını getiri tahmininde LSTM ve klasik ARIMA ile karşılaştırıyoruz. Sonuçlar düşündüğünüz gibi olmayabilir.', date: '01 Tem 2026', min: 18 },
+      { cat: 'İstatistik & Matematik', key: 'stat', title: 'GARCH ile Volatilite Tahmini: BIST 100 Uygulaması', excerpt: 'ARCH etkisini test etmekten GARCH(1,1) parametre yorumuna: volatilite kümelenmesini adım adım modelliyoruz.', date: '24 Haz 2026', min: 12 },
+      { cat: 'İstatistik & Matematik', key: 'stat', title: 'Durağanlık Testleri: ADF, KPSS ve Neden İkisini Birden Kullanmalısınız', excerpt: 'Birim kök testlerinin mantığı, güç sorunları ve fiyat serilerinde en sık yapılan hatalar.', date: '17 Haz 2026', min: 11 },
+      { cat: 'Piyasa / Trading', key: 'trading', title: 'Backtest\u2019in Sessiz Katilleri: Look-Ahead Bias ve Survivorship Bias', excerpt: 'Kağıt üzerinde harika görünen stratejiler canlıda neden çöker? Yaygın metodolojik hataları örnek kodlarla gösteriyoruz.', date: '10 Haz 2026', min: 15 },
+      { cat: 'Veri Bilimi', key: 'ds', title: 'Finansal Veri Temizliği: Eksik Bar, Split ve Temettü Düzeltmesi', excerpt: 'Ham fiyat verisini modele hazır hale getirmek: pandas ile uçtan uca bir temizlik pipeline\u2019ı.', date: '03 Haz 2026', min: 13 },
+      { cat: 'Yazılım / Python', key: 'py', title: 'NumPy ile Vektörizasyon: Backtest\u2019inizi 100 Kat Hızlandırın', excerpt: 'For döngülerinden broadcast\u2019e: aynı stratejiyi üç farklı şekilde yazıp süreleri ölçüyoruz.', date: '27 May 2026', min: 10 },
+      { cat: 'Akademik Makaleler', key: 'paper', title: 'Makale Özeti \u2014 Momentum Etkisi 30 Yıl Sonra: Jegadeesh & Titman\u2019ı Yeniden Okumak', excerpt: 'Klasik momentum makalesinin bulguları güncel veriyle hâlâ geçerli mi? Replikasyon ve tartışma.', date: '20 May 2026', min: 16 },
+      { cat: 'ML & AI', key: 'ml', title: 'Özellik Mühendisliği: Finansal Zaman Serilerinden Model Girdisi Üretmek', excerpt: 'Getiri, volatilite ve mikro yapı temelli özellikler; sızıntıya yol açmadan nasıl üretilir?', date: '13 May 2026', min: 14 },
+      { cat: 'İstatistik & Matematik', key: 'stat', title: 'Portföy Optimizasyonuna Giriş: Markowitz\u2019den Riske Dayalı Ağırlıklamaya', excerpt: 'Ortalama-varyans optimizasyonunun teorisi, kırılganlıkları ve pratik alternatifleri.', date: '06 May 2026', min: 15 }
+    ];
+    const en = [
+      { cat: 'Markets / Trading', key: 'trading', title: 'Pairs Trading with Kalman Filters: Dynamic Hedge Ratios', excerpt: 'Why a static OLS beta falls short: estimating a time-varying hedge ratio with a state-space model and building a cointegration strategy.', date: 'Jul 08, 2026', min: 14 },
+      { cat: 'ML & AI', key: 'ml', title: 'Do Transformers Actually Work on Financial Time Series?', excerpt: 'Benchmarking attention against LSTM and classical ARIMA for return forecasting. The results may surprise you.', date: 'Jul 01, 2026', min: 18 },
+      { cat: 'Statistics & Math', key: 'stat', title: 'Volatility Forecasting with GARCH: A BIST 100 Case Study', excerpt: 'From testing ARCH effects to interpreting GARCH(1,1) parameters: modelling volatility clustering step by step.', date: 'Jun 24, 2026', min: 12 },
+      { cat: 'Statistics & Math', key: 'stat', title: 'Stationarity Tests: ADF, KPSS and Why You Should Use Both', excerpt: 'The logic of unit-root tests, their power problems, and the most common mistakes with price series.', date: 'Jun 17, 2026', min: 11 },
+      { cat: 'Markets / Trading', key: 'trading', title: 'The Silent Killers of Backtests: Look-Ahead and Survivorship Bias', excerpt: 'Why do strategies that look great on paper collapse live? Common methodological errors, shown with example code.', date: 'Jun 10, 2026', min: 15 },
+      { cat: 'Data Science', key: 'ds', title: 'Cleaning Financial Data: Missing Bars, Splits and Dividend Adjustments', excerpt: 'Getting raw price data model-ready: an end-to-end cleaning pipeline with pandas.', date: 'Jun 03, 2026', min: 13 },
+      { cat: 'Software / Python', key: 'py', title: 'Vectorization with NumPy: Make Your Backtest 100x Faster', excerpt: 'From for-loops to broadcasting: writing the same strategy three ways and timing each.', date: 'May 27, 2026', min: 10 },
+      { cat: 'Academic Papers', key: 'paper', title: 'Paper Digest \u2014 Momentum 30 Years On: Rereading Jegadeesh & Titman', excerpt: 'Do the classic momentum findings still hold on current data? A replication and discussion.', date: 'May 20, 2026', min: 16 },
+      { cat: 'ML & AI', key: 'ml', title: 'Feature Engineering: Turning Financial Time Series into Model Inputs', excerpt: 'Return-, volatility- and microstructure-based features \u2014 and how to build them without leakage.', date: 'May 13, 2026', min: 14 },
+      { cat: 'Statistics & Math', key: 'stat', title: 'Intro to Portfolio Optimization: From Markowitz to Risk-Based Weighting', excerpt: 'The theory of mean-variance optimization, its fragilities and practical alternatives.', date: 'May 06, 2026', min: 15 }
+    ];
+    return lang === 'en' ? en : tr;
+  }
+
+  renderVals() {
+    const lang = this.state.lang ?? this.props.defaultLang ?? 'tr';
+    const L = this._strings(lang);
+    const posts = this._posts(lang);
+    const view = this.state.view;
+    const filter = this.state.filter;
+    const setView = (v) => this.setState({ view: v, filter: 'all' });
+    const setFilter = (f) => this.setState({ filter: f });
+
+    const pillarDefs = [
+      { key: 'ds', code: 'DS', tr: 'Veri Bilimi', en: 'Data Science' },
+      { key: 'stat', code: 'ΣΔ', tr: 'İstatistik & Matematik', en: 'Statistics & Math' },
+      { key: 'ml', code: 'ML', tr: 'ML & AI', en: 'ML & AI' },
+      { key: 'py', code: 'PY', tr: 'Yazılım / Python', en: 'Software / Python' },
+      { key: 'paper', code: 'PDF', tr: 'Akademik Makaleler', en: 'Academic Papers' },
+      { key: 'trading', code: 'FX', tr: 'Piyasa / Trading', en: 'Markets / Trading' }
+    ];
+    const pillars = pillarDefs.map(d => ({
+      code: d.code, name: lang === 'en' ? d.en : d.tr,
+      onClick: () => this.setState({ view: 'blog', filter: d.key })
+    }));
+
+    const chips = [{ key: 'all', label: L.chipAll }, ...pillarDefs.map(d => ({ key: d.key, label: lang === 'en' ? d.en : d.tr }))]
+      .map(c => {
+        const active = filter === c.key;
+        return {
+          label: c.label, onClick: () => setFilter(c.key),
+          bg: active ? '#101820' : '#FFFFFF', color: active ? '#FFFFFF' : '#3D4652',
+          border: active ? '#101820' : '#DCE1E8'
+        };
+      });
+
+    const ticker = [
+      { sym: 'BIST 100', px: '11.482,3', chg: '+1,24%', up: true },
+      { sym: 'USD/TRY', px: '41,08', chg: '+0,12%', up: true },
+      { sym: 'S&P 500', px: '6.214,5', chg: '\u22120,32%', up: false },
+      { sym: 'NASDAQ', px: '20.881,1', chg: '+0,48%', up: true },
+      { sym: 'BTC/USD', px: '118.450', chg: '+2,10%', up: true },
+      { sym: 'US10Y', px: '4,21%', chg: '\u22123 bps', up: false },
+      { sym: 'BRENT', px: '82,4', chg: '\u22120,85%', up: false },
+      { sym: 'EUR/USD', px: '1,092', chg: '+0,05%', up: true },
+      { sym: 'XAU/USD', px: '2.845', chg: '+0,67%', up: true },
+      { sym: 'VIX', px: '14,2', chg: '\u22124,1%', up: false }
+    ].map(t => ({ ...t, color: t.up ? '#7FC8A9' : '#E08A8A' }));
+    const tickerNote = { sym: '', px: '', chg: L.tickerNote, color: '#55627A' };
+
+    const navDefs = [
+      { key: 'home', label: L.navHome }, { key: 'blog', label: 'Blog' }, { key: 'about', label: L.navAbout }
+    ];
+    return {
+      ...this._splashVals(),
+      L, lang,
+      showTicker: this.props.showTicker ?? true,
+      isHome: view === 'home', isBlog: view === 'blog', isAbout: view === 'about',
+      goHome: () => setView('home'), goBlog: () => setView('blog'), goAbout: () => setView('about'),
+      scrollToNews: () => {
+        const go = () => { const el = this._newsEl; if (el && el.isConnected) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
+        if (this.state.view === 'about') { this.setState({ view: 'home', filter: 'all' }); setTimeout(go, 150); } else go();
+      },
+      newsRef: (el) => { if (el) this._newsEl = el; },
+      setTR: () => this.setState({ lang: 'tr' }), setEN: () => this.setState({ lang: 'en' }),
+      trColor: lang === 'tr' ? '#101820' : '#8A94A3', trBg: lang === 'tr' ? '#EBEEF3' : 'transparent',
+      enColor: lang === 'en' ? '#101820' : '#8A94A3', enBg: lang === 'en' ? '#EBEEF3' : 'transparent',
+      navItems: navDefs.map(n => ({
+        label: n.label, onClick: () => setView(n.key),
+        color: view === n.key ? '#101820' : '#5B6673',
+        bg: view === n.key ? '#EBEEF3' : 'transparent',
+        weight: view === n.key ? 600 : 500
+      })),
+      tickerLoop: [...ticker, tickerNote, ...ticker, tickerNote],
+      featured: posts.slice(0, 3),
+      filteredPosts: filter === 'all' ? posts : posts.filter(p => p.key === filter),
+      pillars, chips,
+      footerCats: pillars.slice(0, 4),
+      aboutTags: ['Python', 'İstatistik', 'ML & AI', 'Quant Finance'],
+      heroCanvasRef: (el) => {
+        this._canvas = el;
+        if (el) this._initCanvas();
+        else { // sayfadan ayrılınca döngüyü ve gözlemciyi durdur
+          if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
+          this._boundCanvas = null;
+          if (this._cvIO) { this._cvIO.disconnect(); this._cvIO = null; }
+        }
+      },
+      subscribed: this.state.subscribed, notSubscribed: !this.state.subscribed,
+      subscribe: () => this.setState({ subscribed: true })
+    };
+  }
+}
+</script>
+</body>
+</html>
