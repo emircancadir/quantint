@@ -2,258 +2,480 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-/**
- * The intro animation, ported from `_splashVals()` in the design export.
- *
- * Nine dots start in the "Q" arrangement, collapse into a ring, widen, rotate a
- * full turn, ease back into the Q, then fly one-by-one onto the navbar logo
- * before the overlay fades out. Every constant here (timings, radii, angle
- * maps, scales) is copied from the original — changing any of them changes the
- * choreography.
- *
- * Two values cross the component boundary:
- *  - the navbar logo's rect, read from the DOM at phase 6 (the flight target);
- *  - the navbar logo's opacity, handed back through a CSS variable so Navbar
- *    can stay a server component.
- */
+type Dot = {
+  x: number;
+  y: number;
+  color: '#101820' | '#3168B4';
+};
 
-// [cx, cy, r, color] on the same 64×64 grid as the logo SVG.
-const DOTS: Array<[number, number, number, string]> = [
-  [30, 5, 4.9, '#101820'],
-  [47.7, 12.3, 4.9, '#101820'],
-  [55, 30, 4.9, '#101820'],
-  [47.7, 47.7, 4.9, '#3168B4'],
-  [30, 55, 4.9, '#101820'],
-  [12.3, 47.7, 4.9, '#101820'],
-  [5, 30, 4.9, '#101820'],
-  [12.3, 12.3, 4.9, '#101820'],
-  [59.1, 59.1, 4.9, '#3168B4'],
+// The exact 64 × 64 geometry used by the navbar logo.
+const DOTS: Dot[] = [
+  { x: 30, y: 5, color: '#101820' },
+  { x: 47.7, y: 12.3, color: '#101820' },
+  { x: 55, y: 30, color: '#101820' },
+  { x: 30, y: 55, color: '#101820' },
+  { x: 12.3, y: 47.7, color: '#101820' },
+  { x: 5, y: 30, color: '#101820' },
+  { x: 12.3, y: 12.3, color: '#101820' },
+  { x: 47.7, y: 47.7, color: '#3168B4' },
+  { x: 59.1, y: 59.1, color: '#3168B4' },
 ];
 
-// Target angles in degrees (-90 = top; y grows downward).
-const ANG8: Record<number, number> = {
-  0: -90,
-  1: -45,
-  2: 0,
-  3: 45,
-  4: 90,
-  5: 135,
-  6: 180,
-  7: 225,
-};
-const ANG9: Record<number, number> = {
-  0: -90,
-  1: -50,
-  2: -10,
-  3: 30,
-  8: 70,
-  4: 110,
-  5: 150,
-  6: 190,
-  7: 230,
-};
-
-const PHASE_TIMINGS: Array<[number, number]> = [
-  [1, 700], //  wordmark wipes out
-  [2, 1400], //  dots close into a "0" ring
-  [3, 2250], //  outer blue dot slides in, ring widens
-  [4, 3050], //  ring opens + 360° spin + recenters
-  [5, 4450], //  ring eases gently back into the Q
-  // 6 is scheduled separately: it must measure the nav logo first.
-  [7, 7350], //  overlay fades
+const DOT_STARTS = [
+  [-7, 8],
+  [-10, -2],
+  [-5, -8],
+  [3, -9],
+  [9, -4],
+  [10, 4],
+  [5, 9],
+  [-4, 10],
+  [-9, 5],
 ];
 
-const onCircle = (deg: number, r: number): [number, number] => {
-  const a = (deg * Math.PI) / 180;
-  return [r * Math.cos(a), r * Math.sin(a)];
-};
+const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const EASE_CONTROLLED = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+// Upper/left dots lead; the two blue dots land in the middle and at the end.
+// Values are intentionally close enough to avoid a "beads on a string" rhythm.
+const FLOW_DELAYS = [0, 70, 115, 205, 145, 50, 30, 175, 245];
+const CURVE_DIRECTIONS = [-1, 1, -1, 1, -1, 1, -1, 1, -1];
 
 export default function Splash() {
-  const [phase, setPhase] = useState(0);
   const [done, setDone] = useState(false);
-  // Measured lazily so the values are never read during SSR.
-  const [mobile, setMobile] = useState(false);
-  const navRect = useRef<DOMRect | null>(null);
-  const originPt = useRef<{ x: number; y: number } | null>(null);
-  const originEl = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const wordRef = useRef<HTMLDivElement>(null);
+  const periodRef = useRef<HTMLSpanElement>(null);
+  const dotRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
   useEffect(() => {
-    setMobile(document.documentElement.clientWidth < 640);
+    const overlay = overlayRef.current;
+    const word = wordRef.current;
+    const period = periodRef.current;
+    if (!overlay || !word || !period) return;
+    const splashOverlay = overlay;
 
-    // Play once per browser session: client-side navigations never remount the
-    // layout, and a mid-session full reload skips straight to the site.
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduce || sessionStorage.getItem('qi-splash') === '1') {
-      setPhase(7);
-      setDone(true);
-      return;
-    }
-    sessionStorage.setItem('qi-splash', '1');
-
-    const timers: ReturnType<typeof setTimeout>[] = PHASE_TIMINGS.map(([p, ms]) =>
-      setTimeout(() => setPhase(p), ms),
-    );
-
-    timers.push(
-      setTimeout(() => {
-        // Measure the target and the true origin at the same instant so a
-        // scrollbar-width difference cannot skew the alignment.
-        navRect.current =
-          document.getElementById('q-nav-logo')?.getBoundingClientRect() ?? null;
-        if (originEl.current) {
-          const r = originEl.current.getBoundingClientRect();
-          originPt.current = { x: r.left, y: r.top };
-        }
-        setPhase(6);
-      }, 5750),
-    );
-
-    timers.push(setTimeout(() => setDone(true), 7950));
-
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  // Hand the navbar logo's opacity back through a CSS variable.
-  useEffect(() => {
-    const visible = done || phase >= 6;
-    document.documentElement.style.setProperty(
-      '--q-navlogo-opacity',
-      visible ? '1' : '0',
-    );
-    return () => {
-      document.documentElement.style.setProperty('--q-navlogo-opacity', '1');
+    const animations: Animation[] = [];
+    const flightAnimations: Animation[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const animationFrames: number[] = [];
+    let finished = false;
+    let flowStarted = false;
+    const navLogo = document.getElementById('q-nav-logo');
+    const navCircles = navLogo
+      ? Array.from(navLogo.querySelectorAll<SVGCircleElement>('circle'))
+      : [];
+    const navWord = navLogo?.nextElementSibling as HTMLElement | null;
+    const scrollKeys = new Set([
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'End',
+      'Home',
+      'PageDown',
+      'PageUp',
+      ' ',
+    ]);
+    const preventScroll = (event: Event) => event.preventDefault();
+    const preventScrollKey = (event: KeyboardEvent) => {
+      if (scrollKeys.has(event.key)) event.preventDefault();
     };
-  }, [phase, done]);
+
+    const setNavLogoVisible = (visible: boolean) => {
+      document.documentElement.style.setProperty(
+        '--q-navlogo-opacity',
+        visible ? '1' : '0',
+      );
+    };
+
+    const revealNavbar = () => {
+      setNavLogoVisible(true);
+      navCircles.forEach((circle) => {
+        circle.style.visibility = 'visible';
+      });
+      if (navWord) {
+        navWord.style.opacity = '1';
+        navWord.style.transform = 'translateY(0)';
+      }
+    };
+
+    const unlockScroll = () => {
+      window.removeEventListener('wheel', preventScroll);
+      window.removeEventListener('touchmove', preventScroll);
+      window.removeEventListener('keydown', preventScrollKey);
+    };
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      revealNavbar();
+      window.removeEventListener('resize', handleResize);
+      setDone(true);
+      // React removes only the already-transparent overlay. Release the scroll
+      // lock on the following frame so the DOM handoff and geometry cleanup do
+      // not compete in the same paint.
+      animationFrames.push(requestAnimationFrame(unlockScroll));
+    };
+
+    const later = (callback: () => void, delay: number) => {
+      timers.push(setTimeout(callback, delay));
+    };
+
+    // Keep the native scrollbar in place so viewport geometry never changes.
+    // Input is locked without mutating html/body overflow or width.
+    window.addEventListener('wheel', preventScroll, { passive: false });
+    window.addEventListener('touchmove', preventScroll, { passive: false });
+    window.addEventListener('keydown', preventScrollKey);
+    setNavLogoVisible(true);
+    navCircles.forEach((circle) => {
+      circle.style.visibility = 'hidden';
+    });
+    if (navWord) {
+      navWord.style.opacity = '0';
+      navWord.style.transform = 'translateY(4px)';
+      navWord.style.transition = 'none';
+    }
+
+    function handleResize() {
+      if (!flowStarted || finished) return;
+
+      // During the short flight the viewport's coordinate system can change
+      // abruptly. A clean immediate handoff is safer than landing off-target.
+      flightAnimations.forEach((animation) => animation.cancel());
+      dotRefs.current.forEach((dot) => {
+        if (dot) dot.style.opacity = '0';
+      });
+      revealNavbar();
+      const resizeFade = splashOverlay.animate(
+          [{ opacity: getComputedStyle(splashOverlay).opacity }, { opacity: 0 }],
+          {
+            duration: 180,
+            easing: 'ease-out',
+            fill: 'forwards',
+          },
+        );
+      animations.push(resizeFade);
+      void resizeFade.finished.then(finish).catch(() => undefined);
+    }
+
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      revealNavbar();
+      const reducedFade = overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
+          delay: 40,
+          duration: 140,
+          easing: 'ease-out',
+          fill: 'forwards',
+        });
+      animations.push(reducedFade);
+      void reducedFade.finished.then(finish).catch(() => undefined);
+      later(finish, 200);
+    } else {
+      // 0.30–1.15s: the compact abstract cluster resolves into the Q.
+      dotRefs.current.forEach((dot, index) => {
+        if (!dot) return;
+        const [x, y] = DOT_STARTS[index];
+        animations.push(
+          dot.animate(
+            [
+              {
+                opacity: 0,
+                transform: `translate(-50%, -50%) translate(${x}px, ${y}px) scale(.7)`,
+                filter: 'blur(1.4px)',
+              },
+              {
+                opacity: 0.88,
+                transform: `translate(-50%, -50%) translate(${x * -0.12}px, ${y * -0.12}px) scale(1.025)`,
+                filter: 'blur(0)',
+                offset: 0.82,
+              },
+              {
+                opacity: 1,
+                transform: 'translate(-50%, -50%) translate(0, 0) scale(1)',
+                filter: 'blur(0)',
+              },
+            ],
+            {
+              delay: 300 + index * 24,
+              duration: 780,
+              easing: EASE_OUT,
+              fill: 'forwards',
+            },
+          ),
+        );
+      });
+
+      // 1.15–1.88s: the wordmark rises as one calm unit; the blue period settles last.
+      animations.push(
+        word.animate(
+          [
+            { opacity: 0, transform: 'translateY(15px)' },
+            { opacity: 1, transform: 'translateY(0)' },
+          ],
+          { delay: 1150, duration: 700, easing: EASE_OUT, fill: 'forwards' },
+        ),
+      );
+      animations.push(
+        period.animate(
+          [
+            { opacity: 0, transform: 'scale(.7)' },
+            { opacity: 1, transform: 'scale(1)' },
+          ],
+          { delay: 1270, duration: 480, easing: EASE_OUT, fill: 'forwards' },
+        ),
+      );
+
+      // 2.40s: the wordmark recedes while the dots begin to flow.
+      animations.push(
+        word.animate(
+          [
+            { opacity: 1, transform: 'translateY(0) scale(1)', filter: 'blur(0)' },
+            {
+              opacity: 0,
+              transform: 'translateY(-4px) scale(.99)',
+              filter: 'blur(1.2px)',
+            },
+          ],
+          { delay: 2400, duration: 700, easing: EASE_CONTROLLED, fill: 'forwards' },
+        ),
+      );
+
+      later(() => {
+        void document.fonts.ready.then(() => {
+          if (finished) return;
+          flowStarted = true;
+          if (navCircles.length !== DOTS.length) {
+            revealNavbar();
+            return;
+          }
+
+          dotRefs.current.forEach((dot, index) => {
+          const targetCircle = navCircles[index];
+          if (!dot || !targetCircle) return;
+
+          const sourceRect = dot.getBoundingClientRect();
+          const targetRect = targetCircle.getBoundingClientRect();
+          const dx = targetRect.left + targetRect.width / 2 - (sourceRect.left + sourceRect.width / 2);
+          const dy = targetRect.top + targetRect.height / 2 - (sourceRect.top + sourceRect.height / 2);
+          const distance = Math.hypot(dx, dy) || 1;
+          const nx = -dy / distance;
+          const ny = dx / distance;
+          const curve = Math.min(24, Math.max(12, distance * 0.025)) * CURVE_DIRECTIONS[index];
+          const scale = targetRect.width / sourceRect.width;
+          const delay = FLOW_DELAYS[index];
+
+          const flight = dot.animate(
+            [
+              {
+                opacity: 1,
+                transform: 'translate(-50%, -50%) translate3d(0, 0, 0) scale(1)',
+              },
+              {
+                opacity: 1,
+                transform: `translate(-50%, -50%) translate3d(${dx * 0.36 + nx * curve}px, ${dy * 0.36 + ny * curve}px, 0) scale(${1 - (1 - scale) * 0.32})`,
+                offset: 0.38,
+              },
+              {
+                opacity: 1,
+                transform: `translate(-50%, -50%) translate3d(${dx * 0.76 + nx * curve * 0.42}px, ${dy * 0.76 + ny * curve * 0.42}px, 0) scale(${1 - (1 - scale) * 0.73})`,
+                offset: 0.74,
+              },
+              {
+                opacity: 1,
+                transform: `translate(-50%, -50%) translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
+              },
+            ],
+            {
+              delay,
+              duration: 900,
+              easing: EASE_OUT,
+              fill: 'forwards',
+            },
+          );
+
+          flight.onfinish = () => {
+            if (finished) return;
+            // Two paints guarantee there is never a frame with neither copy:
+            // first reveal the real SVG circle, then retire its moving twin.
+            animationFrames.push(
+              requestAnimationFrame(() => {
+                targetCircle.style.visibility = 'visible';
+                animationFrames.push(
+                  requestAnimationFrame(() => {
+                    dot.style.opacity = '0';
+                  }),
+                );
+              }),
+            );
+          };
+          flightAnimations.push(flight);
+          animations.push(flight);
+          });
+
+          if (navWord) {
+            navWord.style.transition = '';
+            animations.push(
+              navWord.animate(
+                [
+                  { opacity: 0, transform: 'translateY(4px)' },
+                  { opacity: 1, transform: 'translateY(0)' },
+                ],
+                { delay: 740, duration: 360, easing: EASE_OUT, fill: 'forwards' },
+              ),
+            );
+          }
+        });
+      }, 2450);
+
+      // 3.10s: reveal the page beneath the final portion of the dot flow.
+      later(() => {
+        const hero = document.querySelector<HTMLElement>('[data-q="hero"]');
+        const left = hero?.children.item(0) as HTMLElement | null;
+        const right = hero?.children.item(1) as HTMLElement | null;
+        const leftItems = left
+          ? Array.from(left.children).filter((item): item is HTMLElement => item instanceof HTMLElement)
+          : [];
+
+        [...leftItems, ...(right ? [right] : [])].forEach((item, index) => {
+          const delay = index < leftItems.length ? index * 75 : 120;
+          animations.push(
+            item.animate(
+              [
+                { opacity: 0, transform: 'translateY(14px)' },
+                { opacity: 1, transform: 'translateY(0)' },
+              ],
+              { delay, duration: 620, easing: EASE_OUT, fill: 'both' },
+            ),
+          );
+        });
+      }, 3100);
+
+      const overlayFade = overlay.animate([{ opacity: 1 }, { opacity: 0 }], {
+          delay: 3200,
+          duration: 720,
+          easing: EASE_CONTROLLED,
+          fill: 'forwards',
+        });
+      animations.push(overlayFade);
+      void overlayFade.finished.then(finish).catch(() => undefined);
+
+      // Independent fail-safe: the splash can never block the application.
+      later(finish, 4200);
+    }
+
+    return () => {
+      timers.forEach(clearTimeout);
+      animationFrames.forEach(cancelAnimationFrame);
+      animations.forEach((animation) => animation.cancel());
+      window.removeEventListener('resize', handleResize);
+      unlockScroll();
+      navCircles.forEach((circle) => {
+        circle.style.visibility = '';
+      });
+      if (navWord) {
+        navWord.style.opacity = '';
+        navWord.style.transform = '';
+        navWord.style.transition = '';
+      }
+      setNavLogoVisible(true);
+    };
+  }, []);
 
   if (done) return null;
 
-  const s = mobile ? 1.45 : 2.2;
-  const shiftX = mobile ? -104 : -160;
-  const rect = navRect.current;
-  // window.innerWidth includes the scrollbar and CSS 50% does not — use the
-  // measured origin when we have one.
-  const origin =
-    originPt.current ??
-    (typeof document !== 'undefined'
-      ? {
-          x: document.documentElement.clientWidth / 2,
-          y: document.documentElement.clientHeight / 2,
-        }
-      : { x: 0, y: 0 });
-
-  const R1 = 20 * s;
-  const R2 = 26 * s;
-  const R3 = 40 * s;
-
-  const dots = DOTS.map((d, i) => {
-    const bx = (d[0] - 30) * s;
-    const by = (d[1] - 30) * s;
-    const size = 2 * d[2] * s;
-    let transform = 'none';
-    let delay = '0ms';
-
-    if (phase >= 6 && rect) {
-      const tx = rect.left + (d[0] / 64) * rect.width - origin.x - bx;
-      const ty = rect.top + (d[1] / 64) * rect.height - origin.y - by;
-      const k = rect.width / 64 / s;
-      transform = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${k.toFixed(3)})`;
-      delay = `${i * 90}ms`;
-    } else if (phase >= 5) {
-      transform = 'none'; // gentle return from the ring to the Q
-      delay = `${i * 60}ms`;
-    } else if (phase >= 4) {
-      const [cx, cy] = onCircle(ANG9[i], R3);
-      transform = `translate(${(cx - bx).toFixed(1)}px,${(cy - by).toFixed(1)}px)`;
-    } else if (phase >= 3) {
-      const [cx, cy] = onCircle(ANG9[i], R2);
-      transform = `translate(${(cx - bx).toFixed(1)}px,${(cy - by).toFixed(1)}px)`;
-    } else if (phase >= 2) {
-      const [cx, cy] =
-        i === 8 ? onCircle(45, R1 + 13 * s) : onCircle(ANG8[i], R1);
-      transform = `translate(${(cx - bx).toFixed(1)}px,${(cy - by).toFixed(1)}px)`;
-      delay = i === 8 ? '0ms' : `${i * 45}ms`;
-    }
-
-    return {
-      left: bx - size / 2,
-      top: by - size / 2,
-      size,
-      color: d[3],
-      transform,
-      delay,
-    };
-  });
-
   return (
     <div
+      ref={overlayRef}
+      aria-hidden="true"
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 200,
+        overflow: 'hidden',
         background: '#F6F7F9',
-        opacity: phase >= 7 ? 0 : 1,
-        transition: 'opacity .5s ease',
-        pointerEvents: phase >= 7 ? 'none' : 'auto',
+        pointerEvents: 'auto',
+        willChange: 'opacity',
       }}
     >
       <div
-        ref={originEl}
-        style={{ position: 'absolute', left: '50%', top: '50%', width: 0, height: 0 }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: 0,
-            height: 0,
-            transform:
-              phase >= 4
-                ? 'translateX(0px) rotate(360deg)'
-                : `translateX(${shiftX}px) rotate(0deg)`,
-            transition: 'transform 1.15s cubic-bezier(.55,.05,.3,1)',
-            willChange: 'transform',
-          }}
-        >
-          {dots.map((d, i) => (
-            <span
-              key={i}
-              style={{
-                position: 'absolute',
-                left: `${d.left}px`,
-                top: `${d.top}px`,
-                width: `${d.size}px`,
-                height: `${d.size}px`,
-                borderRadius: '50%',
-                background: d.color,
-                transform: d.transform,
-                transition: 'transform .8s cubic-bezier(.55,0,.25,1)',
-                transitionDelay: d.delay,
-                willChange: 'transform',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div
-        data-q="splashtxt"
         style={{
           position: 'absolute',
           left: '50%',
           top: '50%',
-          transform: 'translate(0,-50%)',
-          marginLeft: `${shiftX + 34 * s + (mobile ? 16 : 26)}px`,
-          fontSize: '60px',
-          fontWeight: 600,
-          letterSpacing: '-0.02em',
-          color: '#101820',
-          opacity: phase >= 1 ? 0 : 1,
-          transition: 'opacity .6s ease',
-          whiteSpace: 'nowrap',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'clamp(16px, 2vw, 24px)',
+          transform: 'translate(-50%, -50%)',
         }}
       >
-        quantint<span style={{ color: '#3168B4' }}>.</span>
+        <div
+          style={{
+            position: 'relative',
+            flex: '0 0 auto',
+            width: 'clamp(72px, 7vw, 96px)',
+            aspectRatio: '1',
+            willChange: 'transform, opacity',
+          }}
+        >
+          {DOTS.map((dot, index) => (
+            <span
+              key={`${dot.x}-${dot.y}`}
+              ref={(element) => {
+                dotRefs.current[index] = element;
+              }}
+              style={{
+                position: 'absolute',
+                left: `${(dot.x / 64) * 100}%`,
+                top: `${(dot.y / 64) * 100}%`,
+                width: `${(9.8 / 64) * 100}%`,
+                aspectRatio: '1',
+                borderRadius: '50%',
+                background: dot.color,
+                opacity: 0,
+                transform: 'translate(-50%, -50%) scale(.7)',
+                transformOrigin: 'center',
+                willChange: 'transform, opacity, filter',
+              }}
+            />
+          ))}
+        </div>
+
+        <div style={{ overflow: 'hidden', padding: '5px 0' }}>
+          <div
+            ref={wordRef}
+            style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              color: '#101820',
+              fontFamily: 'var(--font-plex-sans), IBM Plex Sans, sans-serif',
+              fontSize: 'clamp(40px, 5vw, 60px)',
+              fontWeight: 600,
+              letterSpacing: '-0.025em',
+              lineHeight: 1,
+              opacity: 0,
+              transform: 'translateY(15px)',
+              whiteSpace: 'nowrap',
+              willChange: 'transform, opacity',
+            }}
+          >
+            quantint
+            <span
+              ref={periodRef}
+              style={{
+                display: 'inline-block',
+                color: '#3168B4',
+                opacity: 0,
+                transform: 'scale(.7)',
+                transformOrigin: '50% 80%',
+              }}
+            >
+              .
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

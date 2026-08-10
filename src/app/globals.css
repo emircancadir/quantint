@@ -19,6 +19,11 @@
   --q-dim: #8a94a3;
 }
 
+html {
+  /* Keep page geometry identical while the intro temporarily locks scrolling. */
+  scrollbar-gutter: stable;
+}
+
 * {
   box-sizing: border-box;
 }
