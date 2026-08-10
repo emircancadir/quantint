@@ -1,0 +1,172 @@
+// Quantint data model.
+// Bilingual content strategy: one Post row carries both locales as parallel
+// columns (titleTr/titleEn, ...). One row = one admin record, one publish
+// state, one shared comment thread, and trivially paired slugs for hreflang.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// Prisma 7: the connection URL lives in prisma.config.ts (CLI/migrations) and
+// in the PrismaPg adapter passed to PrismaClient (runtime), not here.
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+enum SubscriberStatus {
+  PENDING
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  // Null only for future OAuth-only accounts; credentials users always have one.
+  passwordHash  String?
+  role          Role      @default(USER)
+  emailVerified DateTime?
+  accounts      Account[]
+  sessions      Session[]
+  comments      Comment[]
+  posts         Post[]    @relation("author")
+  createdAt     DateTime  @default(now())
+}
+
+// Account / Session / VerificationToken: exact shape required by the Auth.js
+// Prisma adapter (https://authjs.dev/getting-started/adapters/prisma).
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Category {
+  id     String @id @default(cuid())
+  // Stable machine key ('ds', 'stat', ...) — used in URLs (?cat=) and seeds.
+  key    String @unique
+  // Short display code shown in the pillar tiles ('DS', 'ΣΔ', ...).
+  code   String
+  nameTr String
+  nameEn String
+  order  Int    @default(0)
+  posts  Post[]
+}
+
+model Post {
+  id         String     @id @default(cuid())
+  slugTr     String     @unique
+  slugEn     String     @unique
+  titleTr    String
+  titleEn    String
+  excerptTr  String
+  excerptEn  String
+  // Markdown source; rendered server-side (Shiki + KaTeX) at request time.
+  bodyTr     String     @db.Text
+  bodyEn     String     @db.Text
+  readMinTr  Int?
+  readMinEn  Int?
+  coverImage String?
+  status     PostStatus @default(DRAFT)
+
+  publishedAt DateTime?
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  author      User      @relation("author", fields: [authorId], references: [id])
+  authorId    String
+  comments    Comment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+model Comment {
+  id       String        @id @default(cuid())
+  body     String        @db.Text
+  status   CommentStatus @default(PENDING)
+  post     Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId   String
+  author   User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+  // Single-level threading: replies reference a top-level comment.
+  parent   Comment?      @relation("thread", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId String?
+  replies  Comment[]     @relation("thread")
+
+  createdAt DateTime @default(now())
+
+  @@index([postId, status])
+}
+
+model NewsletterSubscriber {
+  id         String           @id @default(cuid())
+  email      String           @unique
+  // Email sending is on hold, so signups are stored ACTIVE directly (single
+  // opt-in). PENDING becomes meaningful when double opt-in ships.
+  status     SubscriberStatus @default(ACTIVE)
+  locale     String           @default("tr")
+  unsubToken String           @unique @default(cuid())
+  createdAt  DateTime         @default(now())
+}
+
+// Latest ticker snapshot per symbol, upserted by the background poller.
+model Quote {
+  symbol    String   @id
+  price     String
+  change    String
+  up        Boolean
+  isSample  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,397 @@
+/* ============================================================================
+   Quantint global styles.
+   Ported verbatim from the original design export (design-reference/
+   quantint-design.html, <style> block in the helmet). Values are intentionally
+   identical — do not "tidy" the numbers, they are the design.
+   The one addition is the .q-* hover rules: the design expressed hover through
+   the DC runtime's `style-hover` attribute, which has no React equivalent, so
+   the same declarations live here as real CSS.
+   ========================================================================== */
+
+:root {
+  --q-bg: #f6f7f9;
+  --q-ink: #101820;
+  --q-blue: #3168b4;
+  --q-blue-dark: #245090;
+  --q-line: #e4e8ee;
+  --q-line-soft: #dce1e8;
+  --q-muted: #5b6673;
+  --q-dim: #8a94a3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f6f7f9;
+  color: #101820;
+  font-family: var(--font-plex-sans), Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: #3168b4;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #245090;
+}
+
+::selection {
+  background: #d7e3f5;
+}
+
+@keyframes qi-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes qi-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes qi-fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+[data-reveal].qi-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  * {
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+[data-q='code'] pre {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  [data-q='hero'] {
+    grid-template-columns: 1fr !important;
+    gap: 44px !important;
+    padding: 56px 28px 56px !important;
+  }
+  [data-q='grid3'] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  [data-q='code'] {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+    padding: 40px 36px !important;
+  }
+  [data-q='news'] {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 40px 36px !important;
+  }
+  [data-q='footer'] {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 36px !important;
+  }
+}
+
+@media (max-width: 639px) {
+  [data-q-p] {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  [data-q='navbar'] {
+    flex-wrap: wrap;
+    height: auto !important;
+    padding: 10px 16px 12px !important;
+    justify-content: center !important;
+  }
+  [data-q='nav'] {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  [data-q='hero'] {
+    padding: 44px 20px 48px !important;
+    gap: 36px !important;
+  }
+  [data-q='h1'] {
+    font-size: 37px !important;
+  }
+  [data-q='pageh1'] {
+    font-size: 31px !important;
+  }
+  [data-q='grid3'] {
+    grid-template-columns: 1fr !important;
+  }
+  [data-q='code'] {
+    padding: 28px 22px !important;
+  }
+  [data-q='news'] {
+    padding: 28px 22px !important;
+  }
+  [data-q='postrow'] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 20px !important;
+  }
+  [data-q='postmeta'] {
+    text-align: left !important;
+    white-space: normal !important;
+  }
+  [data-q='about'] {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+    justify-items: center;
+  }
+  [data-q='about'] > div:last-child {
+    justify-self: stretch;
+  }
+  [data-q='footer'] {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  [data-q='footbar'] {
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center !important;
+  }
+  [data-q='splashtxt'] {
+    font-size: 40px !important;
+  }
+  h2 {
+    font-size: 24px !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Hover states — the `style-hover` attributes from the original template.
+   ------------------------------------------------------------------------- */
+
+.q-navlink:hover {
+  color: #101820 !important;
+  background: #ebeef3 !important;
+}
+
+.q-lang:hover {
+  color: #101820 !important;
+}
+
+.q-subscribe-nav:hover {
+  background: #28568f;
+}
+
+.q-cta-primary:hover {
+  background: #3168b4;
+  transform: translateY(-2px);
+}
+
+.q-cta-secondary:hover {
+  border-color: #3168b4;
+  transform: translateY(-2px);
+}
+
+.q-viewall:hover {
+  text-decoration: underline;
+}
+
+.q-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px -24px rgba(16, 24, 32, 0.3);
+  border-color: #c9d6e8;
+}
+
+.q-pillar:hover {
+  border-color: #3168b4;
+  transform: translateY(-3px);
+}
+
+.q-chip:hover {
+  border-color: #3168b4;
+}
+
+.q-postrow:hover {
+  transform: translateX(6px);
+  box-shadow: 0 14px 34px -24px rgba(16, 24, 32, 0.3);
+  border-color: #c9d6e8;
+}
+
+.q-subscribe-btn:hover {
+  background: #24509f;
+}
+
+.q-footlink {
+  cursor: pointer;
+  color: #c7cfda;
+}
+
+.q-footlink:hover {
+  color: #ffffff;
+}
+
+.q-social {
+  color: #9aa6b5;
+  display: inline-flex;
+}
+
+.q-social:hover {
+  color: #ffffff;
+}
+
+/* Reveal wrapper must not introduce a box of its own. */
+.q-reveal-root {
+  display: contents;
+}
+
+/* ---------------------------------------------------------------------------
+   Article body (rendered markdown). Follows the design language: same ink,
+   muted body copy, mono accents, bordered cards for code.
+   ------------------------------------------------------------------------- */
+
+.q-article {
+  font-size: 16.5px;
+  line-height: 1.75;
+  color: #3d4652;
+}
+
+.q-article h2 {
+  margin: 40px 0 14px;
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #101820;
+}
+
+.q-article h3 {
+  margin: 30px 0 10px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #101820;
+}
+
+.q-article p {
+  margin: 0 0 18px;
+  text-wrap: pretty;
+}
+
+.q-article a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.q-article pre {
+  margin: 0 0 22px;
+  border: 1px solid #e4e8ee;
+  border-radius: 12px;
+  padding: 20px 24px;
+  overflow-x: auto;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: #fbfcfd !important; /* wins over Shiki's inline theme bg */
+}
+
+.q-article pre code {
+  font-family: inherit;
+  background: none;
+  padding: 0;
+}
+
+.q-article code {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.88em;
+  background: #ebeef3;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.q-article blockquote {
+  margin: 0 0 18px;
+  padding: 2px 0 2px 18px;
+  border-left: 3px solid #3168b4;
+  color: #5b6673;
+}
+
+.q-article blockquote p {
+  margin-bottom: 0;
+}
+
+.q-article ul,
+.q-article ol {
+  margin: 0 0 18px;
+  padding-left: 26px;
+}
+
+.q-article li {
+  margin-bottom: 6px;
+}
+
+.q-article table {
+  border-collapse: collapse;
+  margin: 0 0 22px;
+  width: 100%;
+  font-size: 14.5px;
+}
+
+.q-article th,
+.q-article td {
+  border: 1px solid #e4e8ee;
+  padding: 9px 14px;
+  text-align: left;
+}
+
+.q-article th {
+  background: #fbfcfd;
+  font-weight: 600;
+  color: #101820;
+}
+
+.q-article img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+.q-article hr {
+  border: none;
+  border-top: 1px solid #e4e8ee;
+  margin: 32px 0;
+}
+
+.q-article .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 0;
+}

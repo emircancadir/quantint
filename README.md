@@ -1,81 +1,70 @@
-# Quantint Web Sitesi (v0.1)
+# Quantint
 
-Claude Design'dan export edilen `.dc.html` tasarımının **birebir, olduğu gibi**
-çalışan hali. Tasarıma (renk, font, animasyon, metin, spacing) hiçbir müdahale
-yapılmadı; yalnızca lokal çalıştırma için ince bir statik sunucu katmanı eklendi.
-
-## Nasıl başlatılır
-
-Node.js kurulu olması yeterli (harici bağımlılık / `npm install` gerekmez):
-
-```bash
-npm start
-# veya
-node server.js
-```
-
-Ardından tarayıcıda:
-
-- **Ana site:** http://localhost:5173/
-- **Preloader (ayrı tasarım):** http://localhost:5173/preloader.html
-
-Farklı port için: `PORT=8080 node server.js`
+Kantitatif finans, veri bilimi ve makine öğrenmesi üzerine Türkçe içerik sitesi.
+Full-stack Next.js uygulaması — orijinal Claude Design tasarımı birebir korunarak
+gerçek bir web uygulamasına dönüştürüldü.
 
 ## Teknoloji
 
-Bu bir **Claude Design (`.dc.html`) export'u**. Klasik bir framework projesi
-değil; kendi çalışma zamanına (`support.js`) sahip statik dosyalardan oluşur:
+| Katman | Seçim |
+|---|---|
+| Framework | Next.js 16 (App Router) + React 19 + TypeScript |
+| Veritabanı | PostgreSQL 16 + Prisma 7 |
+| Auth | Auth.js v5 — e-posta + parola (Argon2), USER/ADMIN rolleri |
+| İçerik | Markdown DB'de (TR+EN kolonları); sunucuda render: Shiki + KaTeX + sanitize |
+| i18n | next-intl — `/tr` ve `/en` route'ları, hreflang eşli slug'lar |
+| Ticker | Keyless Frankfurter (FX) + CoinGecko (BTC); opsiyonel Twelve Data; veri yoksa "örnek veri" etiketi |
+| Deploy | Docker Compose (app + Postgres + Caddy TLS) |
 
-- `support.js` — DC runtime. `<x-dc>` şablonunu ve inline `DCLogic` sınıfını
-  yorumlar; React + ReactDOM + Babel'i **unpkg CDN**'den yükleyip sayfayı
-  `DOMContentLoaded`'da kendisi mount eder.
-- Şablon + mantık tek dosyada: `<x-dc>` HTML şablonu, `sc-if` / `sc-for`
-  koşul-döngüleri, `{{ }}` binding'leri ve altta `<script data-dc-script>`
-  içinde `Component extends DCLogic`.
-- `image-slot.js` — kullanıcı-doldurulabilir görsel placeholder bileşeni
-  (`<x-import>` ile yüklenir). Authoring runtime dışında placeholder gösterir —
-  Hakkında sayfasındaki portre ve footer avatarı bu yüzden placeholder'dır;
-  tasarımın olduğu gibi hali budur.
-- Fontlar: **IBM Plex Sans / IBM Plex Mono** (Google Fonts CDN).
+## Geliştirme
 
-> **Not — internet gerekir:** Runtime React/Babel'i unpkg'den, fontları Google
-> Fonts'tan çeker. Bu tasarımın doğasında var; bir eksiklik değildir. Bağlantı
-> yoksa sayfa boş kalır.
-
-> **Not — `file://` ile açmayın:** `support.js` script olarak, `image-slot.js`
-> dinamik import ile yüklendiğinden dosyayı çift tıklayıp açmak CORS'a takılır.
-> Mutlaka `node server.js` üzerinden (HTTP) servis edin.
-
-## Dosya yapısı
-
-```
-quantint.com.tr/
-├── server.js          # Sıfır-bağımlılık Node statik sunucu (./site'ı servis eder)
-├── package.json       # "npm start" -> node server.js
-├── README.md
-├── Quantint Web Sitesi Tasarımı v0.1.zip   # Orijinal kaynak (dokunulmadı)
-└── site/              # Servis edilen kök — tasarım dosyaları
-    ├── index.html                 # Ana site (Quantint Site.dc.html'in birebir kopyası)
-    ├── preloader.html             # Preloader (Quantint Preloader.dc.html'in birebir kopyası)
-    ├── Quantint Site.dc.html      # Orijinal ana tasarım
-    ├── Quantint Preloader.dc.html # Orijinal preloader tasarımı
-    ├── support.js                 # DC runtime
-    ├── image-slot.js              # Görsel placeholder bileşeni
-    ├── .thumbnail                 # Claude Design export artefaktı (render için gereksiz)
-    └── uploads/                   # Export artefaktları (logo pngleri; sitede inline SVG kullanılıyor)
+```bash
+cp .env.example .env       # değerleri düzenleyin
+docker compose up -d db    # Postgres (host port 5433)
+npm install                # postinstall: prisma generate
+npx prisma migrate dev     # şema + migration
+npx prisma db seed         # 6 kategori, 10 yazı, admin kullanıcı
+npm run dev                # http://localhost:3000
 ```
 
-## Yapılan değişiklikler (tasarım dışı, minimum)
+- **Site:** `/tr` (varsayılan), `/en`
+- **Admin:** `/admin` — `.env`'deki `ADMIN_EMAIL` / `ADMIN_PASSWORD` ile giriş
+- **RSS:** `/api/rss/tr`, `/api/rss/en` · **Sitemap:** `/sitemap.xml`
 
-Tasarım HTML/CSS/JS'ine **hiçbir** değişiklik yapılmadı. Eklenenler yalnızca
-çalıştırma altyapısı:
+## Özellikler
 
-1. Zip `site/` klasörüne çıkarıldı.
-2. Temiz kök URL için `Quantint Site.dc.html` → `index.html`,
-   `Quantint Preloader.dc.html` → `preloader.html` olarak **byte-byte kopyalandı**
-   (orijinaller de duruyor).
-3. `server.js` (bağımlılıksız statik sunucu) ve `package.json` eklendi.
+- **Blog:** DB'den beslenen liste/detay, kategori filtresi, iki dilli slug'lar,
+  OG görselleri, JSON-LD, sitemap/robots/RSS.
+- **Admin paneli:** yazı CRUD (TR/EN Markdown editörü + canlı önizleme — sitedekiyle
+  aynı render pipeline'ı), kategori yönetimi, yorum moderasyonu, abone listesi + CSV.
+- **Hesaplar:** self-registration + giriş (site veritabanında, Argon2 hash).
+  E-posta doğrulama/parola sıfırlama bilinçli olarak yok — e-posta işi askıda.
+- **Yorumlar:** oturum zorunlu, moderasyon-önce (PENDING → APPROVED), sanitize,
+  rate-limit + honeypot.
+- **Bülten:** e-posta yalnızca DB'ye kaydedilir; hiçbir e-posta gönderilmez (askıda).
+- **Ticker:** app içi poller (instrumentation) → `Quote` tablosu. Yalnızca gerçekten
+  çekilen semboller gösterilir; hiç canlı veri yoksa örnek set "örnek veri" etiketiyle.
 
-Kırık import / eksik dosya bulunmadı; tasarım export edildiği haliyle çalışıyor.
-Doğrulama: headless Chrome ile render alındı — splash animasyonu, nav, ticker,
-hero canvas, kod bölümü ve yazı kartları tasarımdaki gibi göründü.
+## Production (VPS)
+
+```bash
+# .env: DB_PASSWORD, AUTH_SECRET, SITE_DOMAIN, ADMIN_EMAIL, ADMIN_PASSWORD
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+`migrate` servisi migration+seed'i uygular ve çıkar; `caddy` SITE_DOMAIN için
+otomatik Let's Encrypt TLS alır.
+
+## Dizin yapısı
+
+```
+prisma/            şema, migration'lar, seed
+messages/          tr.json / en.json UI stringleri
+src/
+  app/[locale]/    site sayfaları (SSR)
+  app/admin/       admin paneli (ADMIN rolü)
+  app/api/         auth, rss, og
+  components/      Splash, HeroCanvas, Ticker, Reveal, yorumlar, admin editör…
+  lib/             db, auth, markdown pipeline, ticker, server actions
+design-reference/  orijinal tasarım export'u (yalnız referans)
+```

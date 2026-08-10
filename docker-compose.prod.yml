@@ -1,0 +1,77 @@
+# Production stack for the VPS:
+#   docker compose -f docker-compose.prod.yml up -d
+# Requires a .env alongside with at least: DB_PASSWORD, AUTH_SECRET,
+# SITE_DOMAIN, ADMIN_EMAIL, ADMIN_PASSWORD (and optionally MARKET_* keys).
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quantint
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      POSTGRES_DB: quantint
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quantint -d quantint']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: applies pending migrations (and seeds on first run), then exits.
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed"
+    environment:
+      DATABASE_URL: postgresql://quantint:${DB_PASSWORD}@db:5432/quantint
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://quantint:${DB_PASSWORD}@db:5432/quantint
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
+      AUTH_URL: https://${SITE_DOMAIN:?set SITE_DOMAIN in .env}
+      AUTH_TRUST_HOST: 'true'
+      NEXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN}
+      MARKET_PROVIDER: ${MARKET_PROVIDER:-}
+      MARKET_API_KEY: ${MARKET_API_KEY:-}
+      TICKER_POLL_MINUTES: ${TICKER_POLL_MINUTES:-5}
+    volumes:
+      # Cover images uploaded through the admin land here and survive deploys.
+      - uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

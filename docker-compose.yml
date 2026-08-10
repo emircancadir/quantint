@@ -1,0 +1,23 @@
+# Local development stack. Phase 6 extends this with the production services
+# (app + caddy + ticker poller); for now it provides the database only.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quantint
+      POSTGRES_PASSWORD: quantint
+      POSTGRES_DB: quantint
+    ports:
+      # Host port 5433: 5432 is taken by an unrelated container (quant_postgres).
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quantint -d quantint']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
