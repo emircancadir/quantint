@@ -6,7 +6,7 @@ import 'server-only';
  *
  * Two layers:
  *  - Keyless baseline (always available): Frankfurter (ECB reference FX —
- *    USD/TRY, EUR/USD) and CoinGecko (BTC/USD with 24h change). Real numbers,
+ *    USD/TRY, EUR/USD) and CoinGecko (major crypto/USD with 24h change). Real numbers,
  *    daily/delayed granularity, no account needed.
  *  - Twelve Data (optional, MARKET_PROVIDER=twelvedata + MARKET_API_KEY):
  *    batch /quote call adds XAU/USD and whatever indices the free tier allows.
@@ -23,10 +23,10 @@ export type LiveQuote = {
   changePct: number;
 };
 
-const FETCH_OPTS: RequestInit = {
+const fetchOptions = (): RequestInit => ({
   headers: { 'User-Agent': 'quantint-ticker/1.0' },
   signal: AbortSignal.timeout(10_000),
-};
+});
 
 /** Frankfurter: latest vs previous ECB reference rates for USD/TRY, EUR/USD. */
 async function fetchFrankfurter(): Promise<LiveQuote[]> {
@@ -35,14 +35,14 @@ async function fetchFrankfurter(): Promise<LiveQuote[]> {
     // Latest rates with USD base (TRY per USD); EUR/USD comes via inverse.
     const latest = await fetch(
       'https://api.frankfurter.app/latest?from=USD&to=TRY,EUR',
-      FETCH_OPTS,
+      fetchOptions(),
     ).then((r) => (r.ok ? r.json() : null));
     if (!latest?.rates) return out;
 
     // Previous banking day (path-style historical endpoint) for the change %.
     const prev = await fetch(
       `https://api.frankfurter.app/${previousBankingDay(latest.date)}?from=USD&to=TRY,EUR`,
-      FETCH_OPTS,
+      fetchOptions(),
     )
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null);
@@ -77,24 +77,34 @@ function previousBankingDay(isoDate: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** CoinGecko: BTC spot + 24h change, keyless. */
+const COINGECKO_COINS: Record<string, string> = {
+  bitcoin: 'BTC/USD',
+  ethereum: 'ETH/USD',
+  solana: 'SOL/USD',
+  ripple: 'XRP/USD',
+  binancecoin: 'BNB/USD',
+};
+
+/** CoinGecko: major crypto spot prices + 24h change, keyless snapshot. */
 async function fetchCoinGecko(): Promise<LiveQuote[]> {
   try {
+    const ids = Object.keys(COINGECKO_COINS).join(',');
     const res = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true',
-      FETCH_OPTS,
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,
+      fetchOptions(),
     );
     if (!res.ok) return [];
     const json = await res.json();
-    const btc = json?.bitcoin;
-    if (typeof btc?.usd !== 'number') return [];
-    return [
-      {
-        symbol: 'BTC/USD',
-        price: btc.usd,
-        changePct: typeof btc.usd_24h_change === 'number' ? btc.usd_24h_change : 0,
-      },
-    ];
+    return Object.entries(COINGECKO_COINS).flatMap(([id, symbol]) => {
+      const quote = json?.[id];
+      if (typeof quote?.usd !== 'number') return [];
+      return [{
+        symbol,
+        price: quote.usd,
+        changePct:
+          typeof quote.usd_24h_change === 'number' ? quote.usd_24h_change : 0,
+      }];
+    });
   } catch (e) {
     console.warn('[ticker] coingecko failed:', e);
     return [];
@@ -115,7 +125,7 @@ async function fetchTwelveData(apiKey: string): Promise<LiveQuote[]> {
     const providerSymbols = Object.values(TWELVE_DATA_SYMBOLS).join(',');
     const res = await fetch(
       `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(providerSymbols)}&apikey=${apiKey}`,
-      FETCH_OPTS,
+      fetchOptions(),
     );
     if (!res.ok) return out;
     const json = await res.json();

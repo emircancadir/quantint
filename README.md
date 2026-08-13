@@ -13,7 +13,7 @@ gerçek bir web uygulamasına dönüştürüldü.
 | Auth | Auth.js v5 — e-posta + parola (Argon2), USER/ADMIN rolleri |
 | İçerik | Markdown DB'de (TR+EN kolonları); sunucuda render: Shiki + KaTeX + sanitize |
 | i18n | next-intl — `/tr` ve `/en` route'ları, hreflang eşli slug'lar |
-| Ticker | Keyless Frankfurter (FX) + CoinGecko (BTC); opsiyonel Twelve Data; veri yoksa "örnek veri" etiketi |
+| Ticker | Frankfurter (FX) + CoinGecko snapshot + Binance WebSocket (BTC, ETH, SOL, XRP, BNB); opsiyonel Twelve Data |
 | Deploy | Docker Compose (app + Postgres + Caddy TLS) |
 
 ## Geliştirme
@@ -44,8 +44,9 @@ npm run dev                # http://localhost:3000
 - **Yorumlar:** oturum zorunlu, moderasyon-önce (PENDING → APPROVED), sanitize,
   rate-limit + honeypot.
 - **Bülten:** e-posta yalnızca DB'ye kaydedilir; hiçbir e-posta gönderilmez (askıda).
-- **Ticker:** app içi poller (instrumentation) → `Quote` tablosu. Yalnızca gerçekten
-  çekilen semboller gösterilir; hiç canlı veri yoksa örnek set "örnek veri" etiketiyle.
+- **Ticker:** app içi poller CoinGecko/Frankfurter snapshot'larını `Quote` tablosuna
+  yazar; BTC, ETH, SOL, XRP ve BNB tarayıcıda WebSocket ile saniyelik güncellenir.
+  Akış kesilirse son snapshot gösterilir; hiç veri yoksa "örnek veri" etiketi kullanılır.
 
 ## Production (VPS)
 

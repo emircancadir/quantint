@@ -53,7 +53,7 @@ services:
       SITE_URL: https://${SITE_DOMAIN}
       MARKET_PROVIDER: ${MARKET_PROVIDER:-}
       MARKET_API_KEY: ${MARKET_API_KEY:-}
-      TICKER_POLL_MINUTES: ${TICKER_POLL_MINUTES:-5}
+      TICKER_POLL_MINUTES: ${TICKER_POLL_MINUTES:-1}
     volumes:
       # Cover images uploaded through the admin land here and survive deploys.
       - uploads:/app/public/uploads

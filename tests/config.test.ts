@@ -19,11 +19,11 @@ test('redirect targets remain on the same origin', () => {
 });
 
 test('ticker interval rejects unsafe operator values', () => {
-  assert.equal(parsePollIntervalMs(undefined), 5 * 60_000);
-  assert.equal(parsePollIntervalMs(''), 5 * 60_000);
+  assert.equal(parsePollIntervalMs(undefined), 60_000);
+  assert.equal(parsePollIntervalMs(''), 60_000);
   assert.equal(parsePollIntervalMs('0'), 60_000);
   assert.equal(parsePollIntervalMs('-2'), 60_000);
   assert.equal(parsePollIntervalMs('2.5'), 2.5 * 60_000);
   assert.equal(parsePollIntervalMs('1000'), 60 * 60_000);
-  assert.equal(parsePollIntervalMs('not-a-number'), 5 * 60_000);
+  assert.equal(parsePollIntervalMs('not-a-number'), 60_000);
 });

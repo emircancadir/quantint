@@ -1,4 +1,4 @@
-const DEFAULT_MINUTES = 5;
+const DEFAULT_MINUTES = 1;
 const MIN_MINUTES = 1;
 const MAX_MINUTES = 60;
 

@@ -3,6 +3,7 @@ import 'server-only';
 import { prisma } from '@/lib/db';
 import { fetchLiveQuotes } from './provider';
 import { parsePollIntervalMs } from './config';
+import { formatTickerChange, formatTickerPrice } from './format';
 
 /**
  * Background poller: fetches live quotes and upserts them into the Quote
@@ -12,39 +13,21 @@ import { parsePollIntervalMs } from './config';
 
 const POLL_INTERVAL_MS = parsePollIntervalMs(process.env.TICKER_POLL_MINUTES);
 
-/** Turkish number formatting, matching the design ('41,08', '118.450'). */
-function formatPrice(symbol: string, price: number): string {
-  const digits = price >= 1000 ? 0 : price >= 100 ? 1 : price >= 10 ? 2 : 3;
-  return new Intl.NumberFormat('tr-TR', {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(price);
-}
-
-function formatChange(changePct: number): string {
-  const abs = new Intl.NumberFormat('tr-TR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(changePct));
-  // The design uses the true minus sign (−), not a hyphen.
-  return `${changePct < 0 ? '−' : '+'}${abs}%`;
-}
-
 export async function pollOnce(): Promise<number> {
   const quotes = await fetchLiveQuotes();
   for (const q of quotes) {
     await prisma.quote.upsert({
       where: { symbol: q.symbol },
       update: {
-        price: formatPrice(q.symbol, q.price),
-        change: formatChange(q.changePct),
+        price: formatTickerPrice(q.price),
+        change: formatTickerChange(q.changePct),
         up: q.changePct >= 0,
         isSample: false,
       },
       create: {
         symbol: q.symbol,
-        price: formatPrice(q.symbol, q.price),
-        change: formatChange(q.changePct),
+        price: formatTickerPrice(q.price),
+        change: formatTickerChange(q.changePct),
         up: q.changePct >= 0,
         isSample: false,
       },
