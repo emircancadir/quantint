@@ -68,6 +68,67 @@
     "copiedCode": "Copied",
     "breadcrumbs": "Breadcrumb"
   },
+  "about": {
+    "metaTitle": "About",
+    "metaDescription": "How quantint turns quantitative-finance research into clear, verifiable and reproducible work backed by code.",
+    "kicker": "about quantint",
+    "title": "Turning quantitative thinking into practical knowledge.",
+    "lead": "We approach financial markets through data, mathematics and working code — not intuition alone.",
+    "intro": "quantint is an independent research and publishing platform bridging quantitative finance and data science. We unpack complex models without losing their substance and make every argument possible to follow.",
+    "explore": "Explore the research",
+    "statsLabel": "quantint at a glance",
+    "statPosts": "published research pieces",
+    "statTopics": "core subject areas",
+    "statLanguages": "publishing languages",
+    "statTransparent": "transparent methodology",
+    "missionKicker": "why we exist",
+    "missionTitle": "Better questions, more robust models.",
+    "missionText": "Quantitative-finance material often stops at theory or presents code without context. We bring both into one research workflow: from assumption to model, from model to test, and from test to interpretation.",
+    "missionText2": "Our goal is not to hand out trading signals. It is to help readers challenge a claim, rebuild a model and understand the limits of its conclusions.",
+    "principlesKicker": "publishing principles",
+    "principlesTitle": "Three standards behind every piece.",
+    "principlesLead": "No matter how complex the topic, we do not trade away research quality or clarity.",
+    "principles": {
+      "rigor": {
+        "title": "Mathematically rigorous",
+        "text": "We state assumptions clearly and show where a method works, where it breaks and why that distinction matters."
+      },
+      "reproducible": {
+        "title": "Verifiable with code",
+        "text": "We do more than describe results: data steps, formulas and working implementations are presented together."
+      },
+      "accessible": {
+        "title": "Accessible by design",
+        "text": "We preserve technical accuracy while building intuition through visuals and carefully sequenced examples."
+      }
+    },
+    "processKicker": "how we work",
+    "processTitle": "From research question to published work.",
+    "process": {
+      "question": {
+        "title": "Define the question",
+        "text": "We begin with a measurable, falsifiable question grounded in a real market problem."
+      },
+      "research": {
+        "title": "Study literature and data",
+        "text": "Academic evidence, data quality and the method's assumptions are evaluated together."
+      },
+      "verify": {
+        "title": "Build and pressure-test",
+        "text": "We reproduce the model and test leakage, bias, transaction costs and robustness."
+      },
+      "publish": {
+        "title": "Publish openly and update",
+        "text": "Limitations are published alongside findings, and the work is revised when new evidence appears."
+      }
+    },
+    "topicsKicker": "fields of work",
+    "topicsTitle": "A map from theory to markets.",
+    "topicsLead": "From statistical foundations to production-quality Python, each subject gets the same research discipline.",
+    "disclosureKicker": "transparency note",
+    "disclosureTitle": "Research, not investment advice.",
+    "disclosureText": "All content is for education and research. Nothing published is personal investment advice or a promise of returns. We commit to stating data sources, methods, conflicts of interest and material limitations clearly."
+  },
   "auth": {
     "loginTitle": "Sign In",
     "loginSub": "Sign in to comment and join the discussion.",

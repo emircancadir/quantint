@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePathname } from '@/i18n/navigation';
 
 type Dot = {
   x: number;
@@ -44,7 +43,6 @@ const CURVE_DIRECTIONS = [-1, 1, -1, 1, -1, 1, -1, 1, -1];
 const SESSION_KEY = 'quantint:splash-seen';
 
 export default function Splash() {
-  const pathname = usePathname();
   const [done, setDone] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
@@ -52,15 +50,20 @@ export default function Splash() {
   const dotRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
   useEffect(() => {
-    if (pathname !== '/') {
-      document.documentElement.style.setProperty('--q-navlogo-opacity', '1');
-      return;
-    }
-
-    // The intro is a brand moment, not a navigation tax: show it only once per
-    // browser tab. Reloads and internal page visits hand control over instantly.
+    // On localhost the animation replays on every full refresh so it stays easy
+    // to review while the site is being built. In production it remains a brand
+    // moment shown once per browser tab, not a tax on every internal navigation.
+    const localDevelopment =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '::1';
+    const forceReplay = new URLSearchParams(window.location.search).has('intro');
     try {
-      if (window.sessionStorage.getItem(SESSION_KEY)) {
+      if (
+        !localDevelopment &&
+        !forceReplay &&
+        window.sessionStorage.getItem(SESSION_KEY)
+      ) {
         document.documentElement.style.setProperty('--q-navlogo-opacity', '1');
         queueMicrotask(() => setDone(true));
         return;
@@ -404,13 +407,14 @@ export default function Splash() {
       }
       setNavLogoVisible(true);
     };
-  }, [pathname]);
+  }, []);
 
-  if (done || pathname !== '/') return null;
+  if (done) return null;
 
   return (
     <div
       ref={overlayRef}
+      data-q="splash"
       aria-hidden="true"
       style={{
         position: 'fixed',

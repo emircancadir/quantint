@@ -68,6 +68,67 @@
     "copiedCode": "Kopyalandı",
     "breadcrumbs": "Sayfa yolu"
   },
+  "about": {
+    "metaTitle": "Hakkımızda",
+    "metaDescription": "quantint'in kantitatif finans araştırmalarını anlaşılır, doğrulanabilir ve kodla yeniden üretilebilir içeriklere dönüştürme yaklaşımı.",
+    "kicker": "quantint hakkında",
+    "title": "Kantitatif düşünceyi uygulanabilir bilgiye dönüştürüyoruz.",
+    "lead": "Finansal piyasaları sezgilerle değil; veri, matematik ve çalışan kodla anlamaya çalışıyoruz.",
+    "intro": "quantint, kantitatif finans ile veri bilimi arasındaki mesafeyi kapatan bağımsız bir araştırma ve yayın platformudur. Karmaşık modelleri özünü kaybetmeden, takip edilebilir bir anlatımla ele alır.",
+    "explore": "Yazıları keşfet",
+    "statsLabel": "quantint kısa bilgiler",
+    "statPosts": "yayındaki araştırma",
+    "statTopics": "temel konu alanı",
+    "statLanguages": "yayın dili",
+    "statTransparent": "şeffaf yöntem",
+    "missionKicker": "neden buradayız",
+    "missionTitle": "Daha iyi sorular, daha sağlam modeller.",
+    "missionText": "Türkçe kantitatif finans kaynaklarının çoğu ya yalnızca teoriye ya da bağlamdan kopuk kod örneklerine odaklanıyor. Biz ikisini aynı araştırma akışında buluşturuyoruz: varsayımdan modele, modelden teste, testten yoruma.",
+    "missionText2": "Amacımız hazır işlem sinyalleri vermek değil; okuyucunun bir iddiayı sorgulayabilmesini, modeli yeniden kurabilmesini ve sonuçların sınırlarını görebilmesini sağlamak.",
+    "principlesKicker": "yayın ilkeleri",
+    "principlesTitle": "Her içerikte değişmeyen üç standart.",
+    "principlesLead": "Konu ne kadar karmaşık olursa olsun, araştırma kalitesinden ve anlaşılabilirlikten ödün vermiyoruz.",
+    "principles": {
+      "rigor": {
+        "title": "Matematiksel olarak sağlam",
+        "text": "Varsayımları açıkça yazar, kullanılan yöntemlerin nerede çalıştığını ve nerede kırıldığını gösteririz."
+      },
+      "reproducible": {
+        "title": "Kodla doğrulanabilir",
+        "text": "Sonuçları yalnızca anlatmayız; veri adımlarını, formülleri ve çalışan uygulamaları birlikte paylaşırız."
+      },
+      "accessible": {
+        "title": "Erişilebilir anlatım",
+        "text": "Teknik doğruluğu korurken kavramları sezgi, görsel açıklama ve adım adım örneklerle anlaşılır kılarız."
+      }
+    },
+    "processKicker": "nasıl çalışıyoruz",
+    "processTitle": "Bir yazının araştırmadan yayına yolculuğu.",
+    "process": {
+      "question": {
+        "title": "Soruyu tanımla",
+        "text": "Ölçülebilir, sınanabilir ve piyasada karşılığı olan net bir araştırma sorusuyla başlarız."
+      },
+      "research": {
+        "title": "Literatürü ve veriyi incele",
+        "text": "Akademik çalışmaları, veri kalitesini ve yöntemin temel varsayımlarını birlikte değerlendiririz."
+      },
+      "verify": {
+        "title": "Kodu yaz ve zorla",
+        "text": "Modeli yeniden üretir; sızıntı, yanlılık, işlem maliyeti ve sağlamlık kontrolleriyle test ederiz."
+      },
+      "publish": {
+        "title": "Açıkça yayımla ve güncelle",
+        "text": "Bulgular kadar sınırlamaları da paylaşır, yeni kanıt ortaya çıktığında içeriği güncelleriz."
+      }
+    },
+    "topicsKicker": "çalışma alanları",
+    "topicsTitle": "Teoriden piyasaya uzanan konu haritası.",
+    "topicsLead": "İstatistiksel temellerden üretim kalitesinde Python uygulamalarına kadar aynı araştırma disipliniyle ilerliyoruz.",
+    "disclosureKicker": "şeffaflık notu",
+    "disclosureTitle": "Araştırma sunuyoruz, yatırım tavsiyesi değil.",
+    "disclosureText": "İçerikler eğitim ve araştırma amacı taşır. Hiçbir yazı kişisel yatırım tavsiyesi veya getiri vaadi değildir. Veri kaynaklarını, yöntemleri, çıkar çatışmalarını ve önemli sınırlamaları açıkça belirtmeyi taahhüt ederiz."
+  },
   "auth": {
     "loginTitle": "Giriş Yap",
     "loginSub": "Yorum yazmak ve tartışmalara katılmak için hesabınıza giriş yapın.",

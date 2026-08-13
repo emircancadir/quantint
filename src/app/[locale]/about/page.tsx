@@ -1,19 +1,27 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import Avatar from '@/components/Avatar';
+import { Link } from '@/i18n/navigation';
+import type { Locale } from '@/i18n/routing';
+import { getCategories, categoryName } from '@/lib/categories';
+import { prisma } from '@/lib/db';
 import { getSiteUrl } from '@/lib/site-url';
+import NewsletterSection from '@/components/NewsletterSection';
+import Reveal from '@/components/Reveal';
 
-const ABOUT_TAGS = ['Python', 'İstatistik', 'ML & AI', 'Quant Finance'];
+const PRINCIPLES = ['rigor', 'reproducible', 'accessible'] as const;
+const PROCESS = ['question', 'research', 'verify', 'publish'] as const;
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'common' });
+  const t = await getTranslations({ locale, namespace: 'about' });
   const site = getSiteUrl();
   return {
-    title: t('aboutTitle'),
+    title: t('metaTitle'),
+    description: t('metaDescription'),
     alternates: {
       canonical: `${site}/${locale}/about`,
       languages: { tr: `${site}/tr/about`, en: `${site}/en/about` },
@@ -28,86 +36,152 @@ export default async function AboutPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('common');
+  const loc = locale as Locale;
+  const t = await getTranslations('about');
+  const common = await getTranslations('common');
+  const [categories, postCount] = await Promise.all([
+    getCategories(),
+    prisma.post.count({
+      where: {
+        status: { in: ['PUBLISHED', 'SCHEDULED'] },
+        publishedAt: { lte: new Date() },
+      },
+    }),
+  ]);
 
-  const paragraph: React.CSSProperties = {
-    margin: '0 0 18px',
-    fontSize: '16.5px',
-    lineHeight: 1.75,
-    color: '#3D4652',
-    textWrap: 'pretty',
+  const site = getSiteUrl();
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: t('metaTitle'),
+    description: t('metaDescription'),
+    url: `${site}/${locale}/about`,
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'quantint',
+      url: site,
+      description: t('missionText'),
+      knowsAbout: categories.map((category) => categoryName(category, loc)),
+    },
   };
 
   return (
-    <main
-      data-q-p="1"
-      style={{
-        flex: 1,
-        maxWidth: '920px',
-        margin: '0 auto',
-        padding: '72px 32px 88px',
-        width: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
-      <div
-        data-q="about"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '200px 1fr',
-          gap: '52px',
-          alignItems: 'start',
+    <main className="q-about-page">
+      <Reveal />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
-      >
-        <Avatar size={200} />
-        <div>
-          <div
-            style={{
-              fontFamily: 'var(--font-plex-mono), monospace',
-              fontSize: '13px',
-              letterSpacing: '.14em',
-              textTransform: 'uppercase',
-              color: '#3168B4',
-              marginBottom: '14px',
-            }}
-          >
-            {t('aboutKicker')}
-          </div>
-          <h1
-            data-q="pageh1"
-            style={{
-              margin: '0 0 20px',
-              fontSize: '40px',
-              fontWeight: 700,
-              letterSpacing: '-0.03em',
-            }}
-          >
-            {t('aboutTitle')}
-          </h1>
-          <p style={paragraph}>{t('aboutP1')}</p>
-          <p style={paragraph}>{t('aboutP2')}</p>
-          <p style={{ ...paragraph, margin: 0 }}>{t('aboutP3')}</p>
-          <div
-            style={{ display: 'flex', gap: '12px', marginTop: '32px', flexWrap: 'wrap' }}
-          >
-            {ABOUT_TAGS.map((tag) => (
-              <span
-                key={tag}
-                style={{
-                  fontFamily: 'var(--font-plex-mono), monospace',
-                  fontSize: '12.5px',
-                  color: '#3168B4',
-                  background: '#EDF3FB',
-                  borderRadius: '999px',
-                  padding: '7px 16px',
-                }}
-              >
-                {tag}
-              </span>
-            ))}
+      />
+
+      <section className="q-about-hero">
+        <div className="q-about-copy">
+          <div className="q-kicker">{t('kicker')}</div>
+          <h1 data-q="pageh1">{t('title')}</h1>
+          <p className="q-about-lead">{t('lead')}</p>
+          <p className="q-about-intro">{t('intro')}</p>
+          <div className="q-about-actions">
+            <Link href="/blog" className="q-cta-primary">
+              {t('explore')} <span aria-hidden="true">→</span>
+            </Link>
+            <Link href="/#newsletter" className="q-cta-secondary">
+              {common('navSubscribe')}
+            </Link>
           </div>
         </div>
-      </div>
+
+        <div className="q-about-visual" aria-hidden="true">
+          <div className="q-about-orbit q-about-orbit-one"><i /><i /><i /></div>
+          <div className="q-about-orbit q-about-orbit-two"><i /><i /></div>
+          <div className="q-about-core">
+            <strong>q</strong>
+            <span>research → code</span>
+          </div>
+          <code>μ · σ · β · α</code>
+        </div>
+      </section>
+
+      <section className="q-about-stats" aria-label={t('statsLabel')}>
+        <div><strong>{postCount}</strong><span>{t('statPosts')}</span></div>
+        <div><strong>{categories.length}</strong><span>{t('statTopics')}</span></div>
+        <div><strong>2</strong><span>{t('statLanguages')}</span></div>
+        <div><strong>100%</strong><span>{t('statTransparent')}</span></div>
+      </section>
+
+      <section className="q-about-section q-about-mission" data-reveal="true">
+        <div>
+          <div className="q-kicker">{t('missionKicker')}</div>
+          <h2>{t('missionTitle')}</h2>
+        </div>
+        <div>
+          <p>{t('missionText')}</p>
+          <p>{t('missionText2')}</p>
+        </div>
+      </section>
+
+      <section className="q-about-section" data-reveal="true">
+        <div className="q-about-section-heading">
+          <div className="q-kicker">{t('principlesKicker')}</div>
+          <h2>{t('principlesTitle')}</h2>
+          <p>{t('principlesLead')}</p>
+        </div>
+        <div className="q-principle-grid">
+          {PRINCIPLES.map((key, index) => (
+            <article key={key}>
+              <span>0{index + 1}</span>
+              <h3>{t(`principles.${key}.title`)}</h3>
+              <p>{t(`principles.${key}.text`)}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="q-about-section q-process" data-reveal="true">
+        <div className="q-about-section-heading">
+          <div className="q-kicker">{t('processKicker')}</div>
+          <h2>{t('processTitle')}</h2>
+        </div>
+        <ol>
+          {PROCESS.map((key, index) => (
+            <li key={key}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <div><h3>{t(`process.${key}.title`)}</h3><p>{t(`process.${key}.text`)}</p></div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="q-about-section" data-reveal="true">
+        <div className="q-about-section-heading">
+          <div className="q-kicker">{t('topicsKicker')}</div>
+          <h2>{t('topicsTitle')}</h2>
+          <p>{t('topicsLead')}</p>
+        </div>
+        <div className="q-about-topics">
+          {categories.map((category) => (
+            <Link
+              key={category.key}
+              href={{ pathname: '/blog', query: { cat: category.key } }}
+            >
+              <span>{category.code}</span>
+              <strong>{categoryName(category, loc)}</strong>
+              <i aria-hidden="true">↗</i>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="q-about-disclosure" data-reveal="true">
+        <div><span>!</span></div>
+        <div>
+          <div className="q-kicker">{t('disclosureKicker')}</div>
+          <h2>{t('disclosureTitle')}</h2>
+          <p>{t('disclosureText')}</p>
+        </div>
+      </section>
+
+      <NewsletterSection standalone={false} />
     </main>
   );
 }
