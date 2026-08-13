@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Avatar from '@/components/Avatar';
+import { getSiteUrl } from '@/lib/site-url';
 
 const ABOUT_TAGS = ['Python', 'İstatistik', 'ML & AI', 'Quant Finance'];
 
@@ -10,7 +11,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const site = getSiteUrl();
   return {
     title: t('aboutTitle'),
     alternates: {

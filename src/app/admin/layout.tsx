@@ -19,6 +19,7 @@ const NAV = [
   { href: '/admin', label: 'Panel' },
   { href: '/admin/posts', label: 'Yazılar' },
   { href: '/admin/categories', label: 'Kategoriler' },
+  { href: '/admin/taxonomy', label: 'Etiket & Seriler' },
   { href: '/admin/comments', label: 'Yorumlar' },
   { href: '/admin/subscribers', label: 'Aboneler' },
 ];

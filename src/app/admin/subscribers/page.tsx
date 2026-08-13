@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import Link from 'next/link';
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   ACTIVE: { label: 'aktif', color: '#2E7D5B', bg: '#EAF5EF' },
@@ -48,7 +49,7 @@ export default async function AdminSubscribersPage() {
             {subscribers.length}
           </span>
         </h1>
-        <a
+        <Link
           href="/admin/subscribers/export"
           className="q-subscribe-btn"
           style={{
@@ -61,7 +62,7 @@ export default async function AdminSubscribersPage() {
           }}
         >
           CSV indir
-        </a>
+        </Link>
       </div>
 
       {subscribers.length === 0 ? (

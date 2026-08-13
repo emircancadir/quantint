@@ -3,6 +3,7 @@ import { Link } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
 import { getCategories, categoryName } from '@/lib/categories';
 import { getPublishedPosts } from '@/lib/posts';
+import { getSiteUrl } from '@/lib/site-url';
 import NewsletterSection from '@/components/NewsletterSection';
 import Reveal from '@/components/Reveal';
 
@@ -13,7 +14,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const site = getSiteUrl();
   return {
     title: t('blogTitle'),
     alternates: {
@@ -28,17 +29,24 @@ export default async function BlogPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ cat?: string }>;
+  searchParams: Promise<{ cat?: string; q?: string; tag?: string; series?: string }>;
 }) {
   const { locale } = await params;
-  const { cat } = await searchParams;
+  const { cat, q, tag, series } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('common');
 
   const categories = await getCategories();
   const activeKey =
     cat && categories.some((c) => c.key === cat) ? cat : 'all';
-  const posts = await getPublishedPosts(locale as Locale, activeKey);
+  const searchQuery = typeof q === 'string' ? q.trim().slice(0, 120) : '';
+  const posts = await getPublishedPosts(
+    locale as Locale,
+    activeKey,
+    searchQuery,
+    typeof tag === 'string' ? tag : undefined,
+    typeof series === 'string' ? series : undefined,
+  );
 
   const chips = [
     { key: 'all', label: t('chipAll') },
@@ -85,6 +93,24 @@ export default async function BlogPage({
         {t('blogTitle')}
       </h1>
 
+      <form action={`/${locale}/blog`} method="get" className="q-search-form">
+        <label>
+          <span className="q-sr-only">{t('search')}</span>
+          <input
+            type="search"
+            name="q"
+            defaultValue={searchQuery}
+            placeholder={t('searchPlaceholder')}
+            maxLength={120}
+          />
+        </label>
+        {activeKey !== 'all' && <input type="hidden" name="cat" value={activeKey} />}
+        {tag && <input type="hidden" name="tag" value={tag} />}
+        {series && <input type="hidden" name="series" value={series} />}
+        <button type="submit">{t('search')}</button>
+        {(searchQuery || tag || series) && <Link href="/blog">{t('clearFilters')}</Link>}
+      </form>
+
       <div
         style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '40px' }}
       >
@@ -117,6 +143,13 @@ export default async function BlogPage({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {(searchQuery || tag || series) && (
+          <p className="q-search-summary">
+            {t('resultCount', { count: posts.length })}
+            {searchQuery ? ` · “${searchQuery}”` : ''}
+            {tag ? ` · #${tag}` : ''}
+          </p>
+        )}
         {posts.length === 0 && (
           <p style={{ margin: 0, color: '#5B6673', fontSize: '15px' }}>{t('noPosts')}</p>
         )}
@@ -154,6 +187,11 @@ export default async function BlogPage({
               {p.cat}
             </span>
             <div>
+              {p.series && (
+                <span className="q-post-series-label">
+                  {t('series')} · {p.series.name}{p.series.order ? ` #${p.series.order}` : ''}
+                </span>
+              )}
               <h3
                 style={{
                   margin: '0 0 8px',
@@ -176,6 +214,11 @@ export default async function BlogPage({
               >
                 {p.excerpt}
               </p>
+              {p.tags.length > 0 && (
+                <div className="q-post-tags">
+                  {p.tags.map((postTag) => <span key={postTag.slug}>#{postTag.name}</span>)}
+                </div>
+              )}
             </div>
             <div
               data-q="postmeta"

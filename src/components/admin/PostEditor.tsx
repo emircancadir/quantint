@@ -14,6 +14,7 @@ import {
 } from '@/components/auth/formStyles';
 
 type CategoryOption = { id: string; nameTr: string };
+type TaxonomyOption = { id: string; nameTr: string; nameEn: string };
 
 export type PostEditorValues = {
   id?: string;
@@ -25,9 +26,15 @@ export type PostEditorValues = {
   excerptEn: string;
   bodyTr: string;
   bodyEn: string;
+  referencesTr: string;
+  referencesEn: string;
   readMin: number;
   categoryId: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED';
+  scheduledAt: string;
+  seriesId: string;
+  seriesOrder: number;
+  tagIds: string[];
 };
 
 const EMPTY: PostEditorValues = {
@@ -39,9 +46,15 @@ const EMPTY: PostEditorValues = {
   excerptEn: '',
   bodyTr: '',
   bodyEn: '',
+  referencesTr: '',
+  referencesEn: '',
   readMin: 10,
   categoryId: '',
   status: 'DRAFT',
+  scheduledAt: '',
+  seriesId: '',
+  seriesOrder: 1,
+  tagIds: [],
 };
 
 /** Turkish-aware slugify for auto-suggesting slugs from titles. */
@@ -95,18 +108,24 @@ const FIELD_HINTS: Record<string, string> = {
   excerptEn: 'en az 10 karakter',
   bodyTr: 'boş bırakılamaz',
   bodyEn: 'boş bırakılamaz',
+  scheduledAt: 'planlı yayın için tarih ve saat seçin',
 };
 
 export default function PostEditor({
   initial,
   categories,
+  tags,
+  series,
 }: {
   initial?: PostEditorValues;
   categories: CategoryOption[];
+  tags: TaxonomyOption[];
+  series: TaxonomyOption[];
 }) {
   const [values, setValues] = useState<PostEditorValues>(initial ?? EMPTY);
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
   const [previewHtml, setPreviewHtml] = useState('');
+  const [draftStatus, setDraftStatus] = useState('');
   const [state, action, pending] = useActionState<PostFormState, FormData>(
     savePost,
     null,
@@ -114,11 +133,46 @@ export default function PostEditor({
   // Slug fields follow the title until the user edits them by hand.
   const slugTouched = useRef({ tr: !!initial, en: !!initial });
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialSnapshot = useRef(JSON.stringify(initial ?? EMPTY));
+  const draftKey = `quantint:post-draft:${initial?.id ?? 'new'}`;
 
   const set = <K extends keyof PostEditorValues>(k: K, v: PostEditorValues[K]) =>
     setValues((prev) => ({ ...prev, [k]: v }));
 
   const body = lang === 'tr' ? values.bodyTr : values.bodyEn;
+
+  // Local auto-draft keeps work safe during localhost refreshes and dev-server
+  // restarts without mutating the database on every keystroke.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const saved = localStorage.getItem(draftKey);
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved) as { values: PostEditorValues; savedAt: string };
+        if (confirm(`Kaydedilmemiş yerel taslak bulundu (${new Date(parsed.savedAt).toLocaleString('tr-TR')}). Geri yüklensin mi?`)) {
+          const base = JSON.parse(initialSnapshot.current) as PostEditorValues;
+          setValues({ ...base, ...parsed.values });
+          setDraftStatus('Yerel taslak geri yüklendi');
+        }
+      } catch {
+        localStorage.removeItem(draftKey);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (JSON.stringify(values) === initialSnapshot.current) return;
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
+      localStorage.setItem(draftKey, JSON.stringify({ values, savedAt: new Date().toISOString() }));
+      setDraftStatus('Yerel taslak kaydedildi');
+    }, 700);
+    return () => {
+      if (draftTimer.current) clearTimeout(draftTimer.current);
+    };
+  }, [draftKey, values]);
 
   // Debounced server-rendered preview — the exact pipeline the site uses, so
   // preview output === published output.
@@ -147,10 +201,15 @@ export default function PostEditor({
   const half: React.CSSProperties = { flex: 1, minWidth: '220px' };
 
   return (
-    <form action={action}>
+    <form
+      action={action}
+      onSubmit={() => localStorage.removeItem(draftKey)}
+    >
       {values.id && <input type="hidden" name="id" value={values.id} />}
       <input type="hidden" name="bodyTr" value={values.bodyTr} />
       <input type="hidden" name="bodyEn" value={values.bodyEn} />
+      <input type="hidden" name="referencesTr" value={values.referencesTr} />
+      <input type="hidden" name="referencesEn" value={values.referencesEn} />
 
       {state?.error && (
         <div style={errorText}>
@@ -207,13 +266,88 @@ export default function PostEditor({
           <select
             name="status"
             value={values.status}
-            onChange={(e) => set('status', e.target.value as 'DRAFT' | 'PUBLISHED')}
+            onChange={(e) =>
+              set('status', e.target.value as PostEditorValues['status'])
+            }
             style={{ ...textInput, height: '46px' }}
           >
             <option value="DRAFT">Taslak</option>
+            <option value="SCHEDULED">Planlandı</option>
             <option value="PUBLISHED">Yayında</option>
           </select>
         </div>
+        {values.status === 'SCHEDULED' && (
+          <div style={{ width: '210px' }}>
+            <label style={fieldLabel}>Yayın tarihi</label>
+            <input
+              name="scheduledAt"
+              type="datetime-local"
+              required
+              value={values.scheduledAt}
+              onChange={(e) => set('scheduledAt', e.target.value)}
+              style={textInput}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="q-editor-taxonomy">
+        <div>
+          <label style={fieldLabel}>Seri</label>
+          <select
+            name="seriesId"
+            value={values.seriesId}
+            onChange={(e) => set('seriesId', e.target.value)}
+            style={{ ...textInput, height: '46px' }}
+          >
+            <option value="">Seri yok</option>
+            {series.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.nameTr} / {item.nameEn}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={fieldLabel}>Seri sırası</label>
+          <input
+            name="seriesOrder"
+            type="number"
+            min={1}
+            max={999}
+            disabled={!values.seriesId}
+            value={values.seriesOrder}
+            onChange={(e) => set('seriesOrder', Number(e.target.value))}
+            style={textInput}
+          />
+        </div>
+        <fieldset>
+          <legend style={fieldLabel}>Etiketler</legend>
+          <div className="q-editor-tags">
+            {tags.length === 0 && (
+              <span>Önce “Etiket &amp; Seriler” sayfasından etiket ekleyin.</span>
+            )}
+            {tags.map((tag) => (
+              <label key={tag.id}>
+                <input
+                  type="checkbox"
+                  name="tagIds"
+                  value={tag.id}
+                  checked={values.tagIds.includes(tag.id)}
+                  onChange={(event) =>
+                    set(
+                      'tagIds',
+                      event.target.checked
+                        ? [...values.tagIds, tag.id]
+                        : values.tagIds.filter((id) => id !== tag.id),
+                    )
+                  }
+                />
+                {tag.nameTr}
+              </label>
+            ))}
+          </div>
+        </fieldset>
       </div>
 
       {/* bilingual fields */}
@@ -360,6 +494,29 @@ export default function PostEditor({
         />
       </div>
 
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '26px' }}>
+        <div style={half}>
+          <label style={fieldLabel}>Kaynakça (TR, Markdown)</label>
+          <textarea
+            rows={5}
+            value={values.referencesTr}
+            onChange={(e) => set('referencesTr', e.target.value)}
+            placeholder={'- [Kaynak adı](https://...)'}
+            style={{ ...textInput, resize: 'vertical', lineHeight: 1.55 }}
+          />
+        </div>
+        <div style={half}>
+          <label style={fieldLabel}>References (EN, Markdown)</label>
+          <textarea
+            rows={5}
+            value={values.referencesEn}
+            onChange={(e) => set('referencesEn', e.target.value)}
+            placeholder={'- [Source title](https://...)'}
+            style={{ ...textInput, resize: 'vertical', lineHeight: 1.55 }}
+          />
+        </div>
+      </div>
+
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         <button
           type="submit"
@@ -402,6 +559,7 @@ export default function PostEditor({
             Sil
           </button>
         )}
+        <span className="q-draft-status" role="status">{draftStatus}</span>
       </div>
     </form>
   );

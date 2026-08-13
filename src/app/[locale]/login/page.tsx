@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { auth } from '@/lib/auth';
 import LoginForm from '@/components/auth/LoginForm';
 import { authCard } from '@/components/auth/formStyles';
+import { safeRedirectPath } from '@/lib/redirects';
 
 export default async function LoginPage({
   params,
@@ -21,7 +22,7 @@ export default async function LoginPage({
 
   const t = await getTranslations('auth');
   // Only allow same-site relative redirect targets.
-  const redirectTo = next?.startsWith('/') && !next.startsWith('//') ? next : `/${locale}`;
+  const redirectTo = safeRedirectPath(next, `/${locale}`);
 
   return (
     <main

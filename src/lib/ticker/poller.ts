@@ -2,6 +2,7 @@ import 'server-only';
 
 import { prisma } from '@/lib/db';
 import { fetchLiveQuotes } from './provider';
+import { parsePollIntervalMs } from './config';
 
 /**
  * Background poller: fetches live quotes and upserts them into the Quote
@@ -9,7 +10,7 @@ import { fetchLiveQuotes } from './provider';
  * idempotent, so an accidental second runner is harmless.
  */
 
-const POLL_INTERVAL_MS = Number(process.env.TICKER_POLL_MINUTES ?? 5) * 60_000;
+const POLL_INTERVAL_MS = parsePollIntervalMs(process.env.TICKER_POLL_MINUTES);
 
 /** Turkish number formatting, matching the design ('41,08', '118.450'). */
 function formatPrice(symbol: string, price: number): string {

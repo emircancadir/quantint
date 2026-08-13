@@ -4,6 +4,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { verify } from '@node-rs/argon2';
 import { z } from 'zod';
 import { prisma } from './db';
+import { checkLoginRateLimit } from './rate-limit';
 
 /**
  * Auth.js v5, credentials-only (email + Argon2 password against our own User
@@ -30,12 +31,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
+        const email = parsed.data.email.toLowerCase().trim();
+        if (!(await checkLoginRateLimit(email, request.headers))) return null;
+
         const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email.toLowerCase().trim() },
+          where: { email },
         });
         if (!user?.passwordHash) return null;
 
@@ -72,5 +76,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 export async function requireAdmin() {
   const session = await auth();
   if (session?.user?.role !== 'ADMIN') return null;
+
+  // JWT claims can outlive a role change or user deletion. Privileged requests
+  // always re-read the current database role so revocation takes effect now.
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (currentUser?.role !== 'ADMIN') return null;
   return session;
 }

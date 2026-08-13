@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import NextLink from 'next/link';
 import { Link } from '@/i18n/navigation';
 import { auth } from '@/lib/auth';
 import { logout } from '@/lib/actions/auth';
@@ -32,7 +33,7 @@ export default async function UserMenu() {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
       {session.user.role === 'ADMIN' && (
-        <a
+        <NextLink
           href="/admin"
           className="q-navlink"
           style={{
@@ -45,7 +46,7 @@ export default async function UserMenu() {
           }}
         >
           admin
-        </a>
+        </NextLink>
       )}
       <span
         title={session.user.email ?? undefined}

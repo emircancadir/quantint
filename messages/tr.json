@@ -49,7 +49,21 @@
     "footerNote": "veri ile yazıldı",
     "chipAll": "Tümü",
     "noPosts": "Bu konuda henüz yazı yok.",
-    "notFoundTitle": "Sayfa bulunamadı."
+    "notFoundTitle": "Sayfa bulunamadı.",
+    "search": "Ara",
+    "searchPlaceholder": "Yazı, konu, etiket veya seri ara…",
+    "clearFilters": "Filtreleri temizle",
+    "resultCount": "{count, plural, =0 {Sonuç bulunamadı} one {# sonuç} other {# sonuç}}",
+    "series": "Yazı serisi",
+    "tableOfContents": "İçindekiler",
+    "references": "Kaynakça",
+    "relatedPosts": "İlgili yazılar",
+    "author": "Yazar",
+    "authorBio": "Kantitatif finans, veri bilimi ve doğrulanabilir araştırmalar üzerine yazıyor.",
+    "updated": "güncellendi",
+    "copyCode": "Kopyala",
+    "copiedCode": "Kopyalandı",
+    "breadcrumbs": "Sayfa yolu"
   },
   "auth": {
     "loginTitle": "Giriş Yap",
@@ -70,6 +84,7 @@
     "errInvalid": "Lütfen tüm alanları doğru doldurun.",
     "errExists": "Bu e-posta ile bir hesap zaten var.",
     "errCredentials": "E-posta veya parola hatalı.",
+    "errRateLimit": "Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.",
     "errUnknown": "Bir şeyler ters gitti, lütfen tekrar deneyin."
   },
   "comments": {

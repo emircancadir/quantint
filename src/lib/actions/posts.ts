@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth';
@@ -23,9 +24,14 @@ const postSchema = z.object({
   excerptEn: z.string().trim().min(10).max(500),
   bodyTr: z.string().min(1),
   bodyEn: z.string().min(1),
+  referencesTr: z.string().max(30_000).default(''),
+  referencesEn: z.string().max(30_000).default(''),
   readMin: z.coerce.number().int().min(1).max(120),
   categoryId: z.string().min(1),
-  status: z.enum(['DRAFT', 'PUBLISHED']),
+  status: z.enum(['DRAFT', 'SCHEDULED', 'PUBLISHED']),
+  scheduledAt: z.string().optional(),
+  seriesId: z.string().optional(),
+  seriesOrder: z.string().optional(),
 });
 
 export async function savePost(
@@ -39,7 +45,23 @@ export async function savePost(
   if (!parsed.success) {
     return { error: 'invalid', fieldErrors: parsed.error.flatten().fieldErrors };
   }
-  const { id, readMin, ...data } = parsed.data;
+  const { id, readMin, scheduledAt, seriesId, seriesOrder, ...data } = parsed.data;
+  const tagIds = formData
+    .getAll('tagIds')
+    .filter((value): value is string => typeof value === 'string' && value.length > 0);
+  const scheduledDate = scheduledAt ? new Date(scheduledAt) : null;
+  if (
+    data.status === 'SCHEDULED' &&
+    (!scheduledDate || Number.isNaN(scheduledDate.getTime()))
+  ) {
+    return { error: 'invalid', fieldErrors: { scheduledAt: ['required'] } };
+  }
+  const publishDate =
+    data.status === 'SCHEDULED' ? scheduledDate : data.status === 'PUBLISHED' ? new Date() : null;
+  const sharedRelations = {
+    seriesId: seriesId || null,
+    seriesOrder: seriesId && seriesOrder ? Number(seriesOrder) : null,
+  };
 
   // Slug uniqueness across both columns (excluding the post being edited).
   const clash = await prisma.post.findFirst({
@@ -64,22 +86,27 @@ export async function savePost(
         where: { id },
         data: {
           ...data,
+          ...sharedRelations,
+          tags: { set: tagIds.map((tagId) => ({ id: tagId })) },
           readMinTr: readMin,
           readMinEn: readMin,
-          // First transition to PUBLISHED stamps the publish date.
+          // Preserve the original publication date for an already-live post;
+          // scheduled posts use the selected future timestamp.
           publishedAt:
-            data.status === 'PUBLISHED'
-              ? (existing?.publishedAt ?? new Date())
-              : existing?.publishedAt,
+            data.status === 'PUBLISHED' && existing?.publishedAt
+              ? existing.publishedAt
+              : publishDate,
         },
       });
     } else {
       await prisma.post.create({
         data: {
           ...data,
+          ...sharedRelations,
+          tags: { connect: tagIds.map((tagId) => ({ id: tagId })) },
           readMinTr: readMin,
           readMinEn: readMin,
-          publishedAt: data.status === 'PUBLISHED' ? new Date() : null,
+          publishedAt: publishDate,
           authorId: session.user.id,
         },
       });
@@ -89,6 +116,9 @@ export async function savePost(
     return { error: 'unknown' };
   }
 
+  revalidatePath('/admin/posts');
+  revalidatePath('/tr');
+  revalidatePath('/en');
   redirect('/admin/posts');
 }
 

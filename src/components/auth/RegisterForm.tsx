@@ -20,6 +20,8 @@ export default function RegisterForm({ redirectTo }: { redirectTo: string }) {
   const errorMessage =
     state?.error === 'exists'
       ? t('errExists')
+      : state?.error === 'rate-limit'
+        ? t('errRateLimit')
       : state?.error === 'invalid'
         ? t('errInvalid')
         : state?.error

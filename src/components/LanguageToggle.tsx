@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { locales, type Locale } from '@/i18n/routing';
 
@@ -18,17 +18,26 @@ import { locales, type Locale } from '@/i18n/routing';
 export default function LanguageToggle() {
   const active = useLocale();
   const pathname = usePathname();
-  const router = useRouter();
   const [alternates, setAlternates] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const map: Record<string, string> = {};
-    document
-      .querySelectorAll<HTMLLinkElement>('link[rel="alternate"][hreflang]')
-      .forEach((l) => {
-        map[l.hreflang] = l.href;
-      });
-    setAlternates(map);
+    let cancelled = false;
+    const read = () => {
+      const map: Record<string, string> = {};
+      document
+        .querySelectorAll<HTMLLinkElement>('link[rel="alternate"][hreflang]')
+        .forEach((link) => {
+          map[link.hreflang] = link.href;
+        });
+      if (!cancelled && Object.keys(map).length > 0) setAlternates(map);
+    };
+    const observer = new MutationObserver(read);
+    observer.observe(document.head, { childList: true, subtree: true });
+    queueMicrotask(read);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, [pathname]);
 
   const pill = (locale: Locale, isActive: boolean): React.CSSProperties => ({

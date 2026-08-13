@@ -33,10 +33,12 @@ npm run dev                # http://localhost:3000
 
 ## Özellikler
 
-- **Blog:** DB'den beslenen liste/detay, kategori filtresi, iki dilli slug'lar,
+- **Blog:** DB'den beslenen liste/detay, arama, kategori/etiket/seri filtreleri,
+  ilgili yazılar, içindekiler, okuma ilerlemesi, kod kopyalama, iki dilli slug'lar,
   OG görselleri, JSON-LD, sitemap/robots/RSS.
 - **Admin paneli:** yazı CRUD (TR/EN Markdown editörü + canlı önizleme — sitedekiyle
-  aynı render pipeline'ı), kategori yönetimi, yorum moderasyonu, abone listesi + CSV.
+  aynı render pipeline'ı), yerel otomatik taslak, planlı yayın, kaynakça,
+  kategori/etiket/seri yönetimi, yorum moderasyonu, abone listesi + CSV.
 - **Hesaplar:** self-registration + giriş (site veritabanında, Argon2 hash).
   E-posta doğrulama/parola sıfırlama bilinçli olarak yok — e-posta işi askıda.
 - **Yorumlar:** oturum zorunlu, moderasyon-önce (PENDING → APPROVED), sanitize,
@@ -54,6 +56,10 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 `migrate` servisi migration+seed'i uygular ve çıkar; `caddy` SITE_DOMAIN için
 otomatik Let's Encrypt TLS alır.
+
+Production veritabanı parolası uygulamaya ayrı bir ortam değişkeni olarak
+aktarılır; migration başlangıç betiği URL için gereken kodlamayı güvenli biçimde
+yapar. Bu nedenle parola içinde `@`, `:`, `/` gibi karakterler kullanılabilir.
 
 ## Dizin yapısı
 

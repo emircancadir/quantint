@@ -21,6 +21,7 @@ enum Role {
 
 enum PostStatus {
   DRAFT
+  SCHEDULED
   PUBLISHED
 }
 
@@ -51,6 +52,27 @@ model User {
   comments      Comment[]
   posts         Post[]    @relation("author")
   createdAt     DateTime  @default(now())
+}
+
+model Tag {
+  id     String @id @default(cuid())
+  slug   String @unique
+  nameTr String
+  nameEn String
+  posts  Post[]
+
+  @@index([nameTr])
+  @@index([nameEn])
+}
+
+model Series {
+  id            String @id @default(cuid())
+  slug          String @unique
+  nameTr        String
+  nameEn        String
+  descriptionTr String @default("") @db.Text
+  descriptionEn String @default("") @db.Text
+  posts         Post[]
 }
 
 // Account / Session / VerificationToken: exact shape required by the Auth.js
@@ -120,6 +142,16 @@ model Post {
   coverImage String?
   status     PostStatus @default(DRAFT)
 
+  // Optional editorial metadata. References are authored as Markdown, one
+  // localized block per language. Scheduled posts become publicly visible as
+  // soon as publishedAt is reached; no cron worker is required.
+  referencesTr String @default("") @db.Text
+  referencesEn String @default("") @db.Text
+  seriesOrder  Int?
+  series       Series? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  seriesId     String?
+  tags         Tag[]
+
   publishedAt DateTime?
   category    Category  @relation(fields: [categoryId], references: [id])
   categoryId  String
@@ -130,6 +162,7 @@ model Post {
   updatedAt   DateTime  @updatedAt
 
   @@index([status, publishedAt])
+  @@index([seriesId, seriesOrder])
 }
 
 model Comment {
@@ -169,4 +202,14 @@ model Quote {
   up        Boolean
   isSample  Boolean  @default(false)
   updatedAt DateTime @updatedAt
+}
+
+// Shared, database-backed fixed-window counters for public auth endpoints.
+// Keys are HMAC hashes, so email addresses and IPs are never stored directly.
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
 }

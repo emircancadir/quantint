@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { locales, type Locale } from '@/i18n/routing';
 import { getPublishedPosts } from '@/lib/posts';
 import { prisma } from '@/lib/db';
+import { getSiteUrl } from '@/lib/site-url';
 
 const esc = (s: string) =>
   s
@@ -20,12 +21,15 @@ export async function GET(
     return new NextResponse('Not found', { status: 404 });
   }
   const loc = locale as Locale;
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const site = getSiteUrl();
 
   const posts = await getPublishedPosts(loc);
   // publishedAt for pubDate (the summary type formats dates for display only).
   const raw = await prisma.post.findMany({
-    where: { status: 'PUBLISHED' },
+    where: {
+      status: { in: ['PUBLISHED', 'SCHEDULED'] },
+      publishedAt: { lte: new Date() },
+    },
     select: { slugTr: true, slugEn: true, publishedAt: true },
   });
   const dateBySlug = new Map(

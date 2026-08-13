@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from '@/i18n/navigation';
 
 type Dot = {
   x: number;
@@ -40,8 +41,10 @@ const EASE_CONTROLLED = 'cubic-bezier(0.16, 1, 0.3, 1)';
 // Values are intentionally close enough to avoid a "beads on a string" rhythm.
 const FLOW_DELAYS = [0, 70, 115, 205, 145, 50, 30, 175, 245];
 const CURVE_DIRECTIONS = [-1, 1, -1, 1, -1, 1, -1, 1, -1];
+const SESSION_KEY = 'quantint:splash-seen';
 
 export default function Splash() {
+  const pathname = usePathname();
   const [done, setDone] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
@@ -49,6 +52,25 @@ export default function Splash() {
   const dotRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
   useEffect(() => {
+    if (pathname !== '/') {
+      document.documentElement.style.setProperty('--q-navlogo-opacity', '1');
+      return;
+    }
+
+    // The intro is a brand moment, not a navigation tax: show it only once per
+    // browser tab. Reloads and internal page visits hand control over instantly.
+    try {
+      if (window.sessionStorage.getItem(SESSION_KEY)) {
+        document.documentElement.style.setProperty('--q-navlogo-opacity', '1');
+        queueMicrotask(() => setDone(true));
+        return;
+      }
+      window.sessionStorage.setItem(SESSION_KEY, '1');
+    } catch {
+      // Storage can be unavailable in hardened/private contexts; the animation
+      // remains safe thanks to its independent completion fail-safe.
+    }
+
     const overlay = overlayRef.current;
     const word = wordRef.current;
     const period = periodRef.current;
@@ -382,9 +404,9 @@ export default function Splash() {
       }
       setNavLogoVisible(true);
     };
-  }, []);
+  }, [pathname]);
 
-  if (done) return null;
+  if (done || pathname !== '/') return null;
 
   return (
     <div

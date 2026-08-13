@@ -49,7 +49,21 @@
     "footerNote": "written with data",
     "chipAll": "All",
     "noPosts": "No posts in this topic yet.",
-    "notFoundTitle": "Page not found."
+    "notFoundTitle": "Page not found.",
+    "search": "Search",
+    "searchPlaceholder": "Search posts, topics, tags or series…",
+    "clearFilters": "Clear filters",
+    "resultCount": "{count, plural, =0 {No results} one {# result} other {# results}}",
+    "series": "Post series",
+    "tableOfContents": "On this page",
+    "references": "References",
+    "relatedPosts": "Related posts",
+    "author": "Author",
+    "authorBio": "Writing about quantitative finance, data science and reproducible research.",
+    "updated": "updated",
+    "copyCode": "Copy",
+    "copiedCode": "Copied",
+    "breadcrumbs": "Breadcrumb"
   },
   "auth": {
     "loginTitle": "Sign In",
@@ -70,6 +84,7 @@
     "errInvalid": "Please fill in every field correctly.",
     "errExists": "An account with this email already exists.",
     "errCredentials": "Wrong email or password.",
+    "errRateLimit": "Too many attempts. Please try again later.",
     "errUnknown": "Something went wrong, please try again."
   },
   "comments": {

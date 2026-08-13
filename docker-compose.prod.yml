@@ -23,9 +23,13 @@ services:
     build:
       context: .
       target: builder
-    command: sh -c "npx prisma migrate deploy && npx prisma db seed"
+    command: node scripts/migrate.mjs
     environment:
-      DATABASE_URL: postgresql://quantint:${DB_PASSWORD}@db:5432/quantint
+      DB_HOST: db
+      DB_PORT: '5432'
+      DB_USER: quantint
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      DB_NAME: quantint
       ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
     depends_on:
@@ -38,11 +42,15 @@ services:
       target: runner
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://quantint:${DB_PASSWORD}@db:5432/quantint
+      DB_HOST: db
+      DB_PORT: '5432'
+      DB_USER: quantint
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      DB_NAME: quantint
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
       AUTH_URL: https://${SITE_DOMAIN:?set SITE_DOMAIN in .env}
       AUTH_TRUST_HOST: 'true'
-      NEXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN}
+      SITE_URL: https://${SITE_DOMAIN}
       MARKET_PROVIDER: ${MARKET_PROVIDER:-}
       MARKET_API_KEY: ${MARKET_API_KEY:-}
       TICKER_POLL_MINUTES: ${TICKER_POLL_MINUTES:-5}

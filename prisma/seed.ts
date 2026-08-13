@@ -28,6 +28,32 @@ const CATEGORIES = [
   { key: 'trading', code: 'FX', nameTr: 'Piyasa / Trading', nameEn: 'Markets / Trading', order: 5 },
 ];
 
+const TAGS = [
+  { slug: 'backtesting', nameTr: 'Backtest', nameEn: 'Backtesting' },
+  { slug: 'portfolio', nameTr: 'Portföy', nameEn: 'Portfolio' },
+  { slug: 'risk', nameTr: 'Risk', nameEn: 'Risk' },
+  { slug: 'time-series', nameTr: 'Zaman Serileri', nameEn: 'Time Series' },
+  { slug: 'machine-learning', nameTr: 'Makine Öğrenmesi', nameEn: 'Machine Learning' },
+  { slug: 'python', nameTr: 'Python', nameEn: 'Python' },
+];
+
+const SERIES = [
+  {
+    slug: 'quant-foundations',
+    nameTr: 'Quant Temelleri',
+    nameEn: 'Quant Foundations',
+    descriptionTr: 'Kantitatif finansa sistemli bir başlangıç.',
+    descriptionEn: 'A structured introduction to quantitative finance.',
+  },
+  {
+    slug: 'robust-backtesting',
+    nameTr: 'Sağlam Backtest',
+    nameEn: 'Robust Backtesting',
+    descriptionTr: 'Yanlılıklardan kaçınan yeniden üretilebilir strateji testleri.',
+    descriptionEn: 'Reproducible strategy tests that avoid common biases.',
+  },
+];
+
 const KALMAN_BODY_TR = `Statik OLS betası neden yetmez? Durum-uzay modeliyle zamanla değişen hedge oranını tahmin edip bir eşbütünleşme stratejisi kuruyoruz.
 
 ## Durum-uzay modeli
@@ -252,6 +278,24 @@ async function main() {
     }
   }
   console.log(`✓ categories: ${createdCategories} created, ${CATEGORIES.length - createdCategories} kept`);
+
+  let createdTags = 0;
+  for (const tag of TAGS) {
+    if (!(await prisma.tag.findUnique({ where: { slug: tag.slug } }))) {
+      await prisma.tag.create({ data: tag });
+      createdTags++;
+    }
+  }
+  console.log(`✓ tags: ${createdTags} created, ${TAGS.length - createdTags} kept`);
+
+  let createdSeries = 0;
+  for (const item of SERIES) {
+    if (!(await prisma.series.findUnique({ where: { slug: item.slug } }))) {
+      await prisma.series.create({ data: item });
+      createdSeries++;
+    }
+  }
+  console.log(`✓ series: ${createdSeries} created, ${SERIES.length - createdSeries} kept`);
 
   // Admin user
   const email = process.env.ADMIN_EMAIL;

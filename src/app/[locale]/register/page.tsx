@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { auth } from '@/lib/auth';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { authCard } from '@/components/auth/formStyles';
+import { safeRedirectPath } from '@/lib/redirects';
 
 export default async function RegisterPage({
   params,
@@ -20,7 +21,7 @@ export default async function RegisterPage({
   if (session?.user) redirect(`/${locale}`);
 
   const t = await getTranslations('auth');
-  const redirectTo = next?.startsWith('/') && !next.startsWith('//') ? next : `/${locale}`;
+  const redirectTo = safeRedirectPath(next, `/${locale}`);
 
   return (
     <main

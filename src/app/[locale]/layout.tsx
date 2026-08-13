@@ -5,10 +5,13 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { routing } from '@/i18n/routing';
 import { plexSans, plexMono } from '@/lib/fonts';
+import { getSiteUrl } from '@/lib/site-url';
 import Splash from '@/components/splash/Splash';
 import Navbar from '@/components/Navbar';
 import Ticker from '@/components/ticker/Ticker';
 import Footer from '@/components/Footer';
+import Analytics from '@/components/Analytics';
+import { Suspense } from 'react';
 
 import '../globals.css';
 import 'katex/dist/katex.min.css';
@@ -30,7 +33,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'site' });
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const site = getSiteUrl();
 
   return {
     metadataBase: new URL(site),
@@ -51,6 +54,9 @@ export async function generateMetadata({
       type: 'website',
       locale: locale === 'en' ? 'en_US' : 'tr_TR',
     },
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+      : {}),
   };
 }
 
@@ -83,6 +89,7 @@ export default async function LocaleLayout({
             {children}
             <Footer />
           </div>
+          <Suspense fallback={null}><Analytics /></Suspense>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -12,6 +12,7 @@ export default async function AdminPostsPage() {
     month: 'short',
     year: 'numeric',
   });
+  const statusLabel = { PUBLISHED: 'yayında', SCHEDULED: 'planlandı', DRAFT: 'taslak' } as const;
 
   return (
     <>
@@ -75,14 +76,14 @@ export default async function AdminPostsPage() {
                 fontWeight: 500,
                 letterSpacing: '.06em',
                 textTransform: 'uppercase',
-                color: p.status === 'PUBLISHED' ? '#2E7D5B' : '#B58A2C',
-                background: p.status === 'PUBLISHED' ? '#EAF5EF' : '#FBF3E0',
+                color: p.status === 'PUBLISHED' ? '#2E7D5B' : p.status === 'SCHEDULED' ? '#3168B4' : '#B58A2C',
+                background: p.status === 'PUBLISHED' ? '#EAF5EF' : p.status === 'SCHEDULED' ? '#EDF3FB' : '#FBF3E0',
                 borderRadius: '6px',
                 padding: '4px 8px',
                 textAlign: 'center',
               }}
             >
-              {p.status === 'PUBLISHED' ? 'yayında' : 'taslak'}
+              {statusLabel[p.status]}
             </span>
             <span
               style={{
