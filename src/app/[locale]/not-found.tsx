@@ -21,7 +21,7 @@ export default async function NotFound() {
           fontFamily: 'var(--font-plex-mono), monospace',
           fontSize: '15px',
           letterSpacing: '.14em',
-          color: '#3168B4',
+          color: 'var(--q-blue)',
           marginBottom: '14px',
         }}
       >
@@ -44,8 +44,8 @@ export default async function NotFound() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '10px',
-          background: '#101820',
-          color: '#FFFFFF',
+          background: 'var(--q-action-bg)',
+          color: 'var(--q-action-ink)',
           padding: '13px 26px',
           borderRadius: '9px',
           fontSize: '15.5px',

@@ -110,9 +110,10 @@ const processor = unified()
   .use(rehypeHeadings)
   .use(rehypeSanitize, sanitizeSchema)
   .use(rehypeKatex)
-  // Single light theme: post bodies render on the white card, matching the
-  // design's light reading surface.
-  .use(rehypeShiki, { theme: 'github-light' })
+  .use(rehypeShiki, {
+    themes: { light: 'github-light', dark: 'github-dark' },
+    defaultColor: 'light',
+  })
   .use(rehypeStringify);
 
 /** Comment rendering: same pipeline minus code theming complexity — comments

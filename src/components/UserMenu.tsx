@@ -22,7 +22,7 @@ export default async function UserMenu() {
           borderRadius: '8px',
           fontSize: '15px',
           fontWeight: 500,
-          color: '#5B6673',
+          color: 'var(--q-muted)',
         }}
       >
         {t('loginTitle')}
@@ -42,7 +42,7 @@ export default async function UserMenu() {
             fontSize: '13px',
             fontWeight: 600,
             fontFamily: 'var(--font-plex-mono), monospace',
-            color: '#3168B4',
+            color: 'var(--q-blue)',
           }}
         >
           admin
@@ -54,7 +54,7 @@ export default async function UserMenu() {
           padding: '8px 6px',
           fontSize: '14px',
           fontWeight: 600,
-          color: '#101820',
+          color: 'var(--q-ink)',
           maxWidth: '14ch',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -72,7 +72,7 @@ export default async function UserMenu() {
             borderRadius: '8px',
             fontSize: '13.5px',
             fontWeight: 500,
-            color: '#8A94A3',
+            color: 'var(--q-dim)',
             background: 'transparent',
             border: 'none',
             cursor: 'pointer',

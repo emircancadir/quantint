@@ -1,7 +1,7 @@
 export default function Wordmark({
   size = 22,
   color,
-  accent = '#3168B4',
+  accent = 'var(--q-blue)',
 }: {
   size?: number;
   color?: string;

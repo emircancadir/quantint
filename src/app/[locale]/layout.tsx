@@ -22,6 +22,8 @@ import 'katex/dist/katex.min.css';
 // rendering is not a bottleneck for this site.
 export const dynamic = 'force-dynamic';
 
+const themeScript = `try{var t=localStorage.getItem('quantint-theme');var d=t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}`;
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -73,10 +75,18 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${plexSans.variable} ${plexMono.variable}`}>
+    <html
+      lang={locale}
+      className={`${plexSans.variable} ${plexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <NextIntlClientProvider>
           <div
+            className="q-site-shell"
             style={{
               minHeight: '100vh',
               display: 'flex',

@@ -16,8 +16,8 @@ export const LOGO_DOTS: Array<[number, number]> = [
 
 export default function Logo({
   size = 34,
-  ink = '#101820',
-  accent = '#3168B4',
+  ink = 'var(--q-ink)',
+  accent = 'var(--q-blue)',
   id,
   style,
 }: {

@@ -67,7 +67,7 @@ export default function CommentForm({ postId }: { postId: string }) {
         disabled={pending}
         className="q-subscribe-btn"
         style={{
-          background: '#3168B4',
+          background: 'var(--q-button-bg)',
           color: '#FFFFFF',
           padding: '11px 26px',
           borderRadius: '9px',

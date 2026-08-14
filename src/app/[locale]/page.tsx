@@ -12,7 +12,7 @@ const monoKicker: React.CSSProperties = {
   fontSize: '13px',
   letterSpacing: '.14em',
   textTransform: 'uppercase',
-  color: '#3168B4',
+  color: 'var(--q-blue)',
   marginBottom: '20px',
 };
 
@@ -36,8 +36,8 @@ export default async function HomePage({
       {/* hero */}
       <section
         style={{
-          borderBottom: '1px solid #E4E8EE',
-          background: 'linear-gradient(180deg,#FBFCFD 0%,#F6F7F9 100%)',
+          borderBottom: '1px solid var(--q-line)',
+          background: 'linear-gradient(180deg,var(--q-surface-soft) 0%,var(--q-bg) 100%)',
         }}
       >
         <div
@@ -67,14 +67,14 @@ export default async function HomePage({
             >
               {t('heroTitle1')}
               <br />
-              <span style={{ color: '#3168B4' }}>{t('heroTitle2')}</span>
+              <span style={{ color: 'var(--q-blue)' }}>{t('heroTitle2')}</span>
             </h1>
             <p
               style={{
                 margin: '0 0 34px',
                 fontSize: '18px',
                 lineHeight: 1.65,
-                color: '#4A5568',
+                color: 'var(--q-muted)',
                 maxWidth: '46ch',
                 textWrap: 'pretty',
               }}
@@ -89,8 +89,8 @@ export default async function HomePage({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '10px',
-                  background: '#101820',
-                  color: '#FFFFFF',
+                  background: 'var(--q-action-bg)',
+                  color: 'var(--q-action-ink)',
                   padding: '13px 26px',
                   borderRadius: '9px',
                   fontSize: '15.5px',
@@ -106,9 +106,9 @@ export default async function HomePage({
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  background: '#FFFFFF',
-                  color: '#101820',
-                  border: '1px solid #DCE1E8',
+                  background: 'var(--q-surface)',
+                  color: 'var(--q-ink)',
+                  border: '1px solid var(--q-line-soft)',
                   padding: '13px 26px',
                   borderRadius: '9px',
                   fontSize: '15.5px',
@@ -123,8 +123,8 @@ export default async function HomePage({
           <div style={{ animation: 'qi-fadeup .7s .15s ease both' }}>
             <div
               style={{
-                background: '#FFFFFF',
-                border: '1px solid #E4E8EE',
+                background: 'var(--q-surface)',
+                border: '1px solid var(--q-line)',
                 borderRadius: '14px',
                 padding: '18px 18px 12px',
                 boxShadow: '0 20px 50px -30px rgba(16,24,32,.25)',
@@ -138,7 +138,7 @@ export default async function HomePage({
                   padding: '10px 4px 4px',
                   fontFamily: 'var(--font-plex-mono), monospace',
                   fontSize: '11.5px',
-                  color: '#8A94A3',
+                  color: 'var(--q-dim)',
                 }}
               >
                 <span>fig. 01 — {t('figCaption')}</span>
@@ -150,7 +150,7 @@ export default async function HomePage({
                       width: '7px',
                       height: '7px',
                       borderRadius: '50%',
-                      background: '#3168B4',
+                      background: 'var(--q-blue)',
                       animation: 'qi-pulse 1.8s ease-in-out infinite',
                       display: 'inline-block',
                     }}
@@ -296,7 +296,7 @@ export default async function HomePage({
           <Link
             href="/blog"
             className="q-viewall"
-            style={{ fontSize: '15px', fontWeight: 600, color: '#3168B4' }}
+            style={{ fontSize: '15px', fontWeight: 600, color: 'var(--q-blue)' }}
           >
             {t('viewAll')} →
           </Link>
@@ -319,8 +319,8 @@ export default async function HomePage({
                 data-reveal="true"
                 className="q-card"
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E4E8EE',
+                  background: 'var(--q-surface)',
+                  border: '1px solid var(--q-line)',
                   borderRadius: '12px',
                   padding: '26px 26px 22px',
                   cursor: 'pointer',
@@ -336,7 +336,7 @@ export default async function HomePage({
                     fontSize: '11.5px',
                     letterSpacing: '.08em',
                     textTransform: 'uppercase',
-                    color: '#3168B4',
+                    color: 'var(--q-blue)',
                   }}
                 >
                   {p.cat}
@@ -358,7 +358,7 @@ export default async function HomePage({
                     margin: 0,
                     fontSize: '14.5px',
                     lineHeight: 1.6,
-                    color: '#5B6673',
+                    color: 'var(--q-muted)',
                     flex: 1,
                   }}
                 >
@@ -370,8 +370,8 @@ export default async function HomePage({
                     gap: '14px',
                     fontFamily: 'var(--font-plex-mono), monospace',
                     fontSize: '12px',
-                    color: '#8A94A3',
-                    borderTop: '1px solid #EEF1F5',
+                    color: 'var(--q-dim)',
+                    borderTop: '1px solid var(--q-line)',
                     paddingTop: '14px',
                   }}
                 >
@@ -427,8 +427,8 @@ export default async function HomePage({
                 data-reveal="true"
                 className="q-pillar"
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E4E8EE',
+                  background: 'var(--q-surface)',
+                  border: '1px solid var(--q-line)',
                   borderRadius: '12px',
                   padding: '22px 24px',
                   display: 'flex',
@@ -442,8 +442,8 @@ export default async function HomePage({
                   style={{
                     fontFamily: 'var(--font-plex-mono), monospace',
                     fontSize: '13px',
-                    color: '#3168B4',
-                    background: '#EDF3FB',
+                    color: 'var(--q-blue)',
+                    background: 'var(--q-surface-muted)',
                     borderRadius: '8px',
                     width: '42px',
                     height: '42px',

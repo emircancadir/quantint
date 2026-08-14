@@ -75,7 +75,7 @@ export default async function BlogPage({
           fontSize: '13px',
           letterSpacing: '.14em',
           textTransform: 'uppercase',
-          color: '#3168B4',
+          color: 'var(--q-blue)',
           marginBottom: '14px',
         }}
       >
@@ -130,9 +130,9 @@ export default async function BlogPage({
                 borderRadius: '999px',
                 fontSize: '13.5px',
                 fontWeight: 500,
-                border: `1px solid ${active ? '#101820' : '#DCE1E8'}`,
-                background: active ? '#101820' : '#FFFFFF',
-                color: active ? '#FFFFFF' : '#3D4652',
+                border: `1px solid ${active ? 'var(--q-action-bg)' : 'var(--q-line-soft)'}`,
+                background: active ? 'var(--q-action-bg)' : 'var(--q-surface)',
+                color: active ? 'var(--q-action-ink)' : 'var(--q-muted)',
                 transition: 'border-color .2s',
               }}
             >
@@ -151,7 +151,7 @@ export default async function BlogPage({
           </p>
         )}
         {posts.length === 0 && (
-          <p style={{ margin: 0, color: '#5B6673', fontSize: '15px' }}>{t('noPosts')}</p>
+          <p style={{ margin: 0, color: 'var(--q-muted)', fontSize: '15px' }}>{t('noPosts')}</p>
         )}
         {posts.map((p) => (
           <Link
@@ -163,8 +163,8 @@ export default async function BlogPage({
             data-q="postrow"
             className="q-postrow"
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #E4E8EE',
+              background: 'var(--q-surface)',
+              border: '1px solid var(--q-line)',
               borderRadius: '12px',
               padding: '28px 32px',
               display: 'grid',
@@ -181,7 +181,7 @@ export default async function BlogPage({
                 fontSize: '11.5px',
                 letterSpacing: '.08em',
                 textTransform: 'uppercase',
-                color: '#3168B4',
+                color: 'var(--q-blue)',
               }}
             >
               {p.cat}
@@ -208,7 +208,7 @@ export default async function BlogPage({
                   margin: 0,
                   fontSize: '14.5px',
                   lineHeight: 1.6,
-                  color: '#5B6673',
+                  color: 'var(--q-muted)',
                   maxWidth: '72ch',
                 }}
               >
@@ -225,7 +225,7 @@ export default async function BlogPage({
               style={{
                 fontFamily: 'var(--font-plex-mono), monospace',
                 fontSize: '12px',
-                color: '#8A94A3',
+                color: 'var(--q-dim)',
                 textAlign: 'right',
                 whiteSpace: 'nowrap',
               }}

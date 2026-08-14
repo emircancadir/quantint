@@ -72,7 +72,7 @@ export default function RegisterForm({ redirectTo }: { redirectTo: string }) {
           autoComplete="new-password"
           style={textInput}
         />
-        <div style={{ marginTop: '6px', fontSize: '12.5px', color: '#8A94A3' }}>
+        <div style={{ marginTop: '6px', fontSize: '12.5px', color: 'var(--q-dim)' }}>
           {t('passwordHint')}
         </div>
       </div>

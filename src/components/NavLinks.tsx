@@ -35,8 +35,8 @@ export default function NavLinks() {
               borderRadius: '8px',
               fontSize: '15px',
               fontWeight: active ? 600 : 500,
-              color: active ? '#101820' : '#5B6673',
-              background: active ? '#EBEEF3' : 'transparent',
+              color: active ? 'var(--q-ink)' : 'var(--q-muted)',
+              background: active ? 'var(--q-surface-muted)' : 'transparent',
             }}
           >
             {item.label}

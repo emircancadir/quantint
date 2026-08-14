@@ -54,7 +54,7 @@ export default async function Comments({
   });
 
   return (
-    <section style={{ marginTop: '56px', borderTop: '1px solid #E4E8EE', paddingTop: '36px' }}>
+    <section style={{ marginTop: '56px', borderTop: '1px solid var(--q-line)', paddingTop: '36px' }}>
       <h2
         style={{
           margin: '0 0 24px',
@@ -70,7 +70,7 @@ export default async function Comments({
             fontFamily: 'var(--font-plex-mono), monospace',
             fontSize: '14px',
             fontWeight: 400,
-            color: '#8A94A3',
+            color: 'var(--q-dim)',
           }}
         >
           {rendered.filter((c) => c.status === 'APPROVED').length}
@@ -85,9 +85,9 @@ export default async function Comments({
             style={{
               margin: 0,
               fontSize: '14.5px',
-              color: '#5B6673',
-              background: '#FFFFFF',
-              border: '1px solid #E4E8EE',
+              color: 'var(--q-muted)',
+              background: 'var(--q-surface)',
+              border: '1px solid var(--q-line)',
               borderRadius: '9px',
               padding: '16px 20px',
             }}
@@ -105,15 +105,15 @@ export default async function Comments({
       </div>
 
       {rendered.length === 0 ? (
-        <p style={{ margin: 0, fontSize: '14.5px', color: '#8A94A3' }}>{t('empty')}</p>
+        <p style={{ margin: 0, fontSize: '14.5px', color: 'var(--q-dim)' }}>{t('empty')}</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {rendered.map((c) => (
             <article
               key={c.id}
               style={{
-                background: '#FFFFFF',
-                border: '1px solid #E4E8EE',
+                background: 'var(--q-surface)',
+                border: '1px solid var(--q-line)',
                 borderRadius: '10px',
                 padding: '18px 22px',
                 opacity: c.status === 'PENDING' ? 0.75 : 1,
@@ -128,14 +128,14 @@ export default async function Comments({
                   flexWrap: 'wrap',
                 }}
               >
-                <span style={{ fontSize: '14.5px', fontWeight: 600, color: '#101820' }}>
+                <span style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--q-ink)' }}>
                   {c.author.name ?? c.author.email.split('@')[0]}
                 </span>
                 <span
                   style={{
                     fontFamily: 'var(--font-plex-mono), monospace',
                     fontSize: '11.5px',
-                    color: '#8A94A3',
+                    color: 'var(--q-dim)',
                   }}
                 >
                   {df.format(c.createdAt)}

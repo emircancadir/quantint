@@ -3,8 +3,8 @@
 export const authCard: React.CSSProperties = {
   maxWidth: '440px',
   margin: '0 auto',
-  background: '#FFFFFF',
-  border: '1px solid #E4E8EE',
+  background: 'var(--q-surface)',
+  border: '1px solid var(--q-line)',
   borderRadius: '16px',
   padding: '40px 44px',
 };
@@ -13,26 +13,26 @@ export const fieldLabel: React.CSSProperties = {
   display: 'block',
   fontSize: '13.5px',
   fontWeight: 600,
-  color: '#3D4652',
+  color: 'var(--q-muted)',
   marginBottom: '7px',
 };
 
 export const textInput: React.CSSProperties = {
   width: '100%',
   boxSizing: 'border-box',
-  border: '1px solid #DCE1E8',
+  border: '1px solid var(--q-line-soft)',
   borderRadius: '9px',
   padding: '12px 15px',
   fontSize: '15px',
   fontFamily: 'var(--font-plex-sans), sans-serif',
-  background: '#FBFCFD',
+  background: 'var(--q-surface-soft)',
   outline: 'none',
-  color: '#101820',
+  color: 'var(--q-ink)',
 };
 
 export const primaryButton: React.CSSProperties = {
   width: '100%',
-  background: '#3168B4',
+  background: 'var(--q-button-bg)',
   color: '#FFFFFF',
   padding: '13px 24px',
   borderRadius: '9px',

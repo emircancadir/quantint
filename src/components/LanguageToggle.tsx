@@ -46,8 +46,8 @@ export default function LanguageToggle() {
     padding: '6px 9px',
     borderRadius: '6px',
     cursor: 'pointer',
-    color: isActive ? '#101820' : '#8A94A3',
-    background: isActive ? '#EBEEF3' : 'transparent',
+    color: isActive ? 'var(--q-ink)' : 'var(--q-dim)',
+    background: isActive ? 'var(--q-surface-muted)' : 'transparent',
     border: 'none',
   });
 

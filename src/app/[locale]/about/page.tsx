@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { getSiteUrl } from '@/lib/site-url';
 import NewsletterSection from '@/components/NewsletterSection';
 import Reveal from '@/components/Reveal';
+import Logo from '@/components/Logo';
 
 const PRINCIPLES = ['rigor', 'reproducible', 'accessible'] as const;
 const PROCESS = ['question', 'research', 'verify', 'publish'] as const;
@@ -95,8 +96,7 @@ export default async function AboutPage({
           <div className="q-about-orbit q-about-orbit-one"><i /><i /><i /></div>
           <div className="q-about-orbit q-about-orbit-two"><i /><i /></div>
           <div className="q-about-core">
-            <strong>q</strong>
-            <span>research → code</span>
+            <Logo size={78} />
           </div>
           <code>μ · σ · β · α</code>
         </div>

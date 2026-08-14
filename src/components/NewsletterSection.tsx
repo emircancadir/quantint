@@ -14,8 +14,8 @@ export default async function NewsletterSection({
       data-q="news"
       data-reveal="true"
       style={{
-        border: '1px solid #E4E8EE',
-        background: '#FFFFFF',
+        border: '1px solid var(--q-line)',
+        background: 'var(--q-surface)',
         borderRadius: '16px',
         padding: '52px 56px',
         display: 'grid',
@@ -36,7 +36,7 @@ export default async function NewsletterSection({
         >
           {t('newsTitle')}
         </h2>
-        <p style={{ margin: 0, fontSize: '15.5px', lineHeight: 1.65, color: '#5B6673' }}>
+        <p style={{ margin: 0, fontSize: '15.5px', lineHeight: 1.65, color: 'var(--q-muted)' }}>
           {t('newsSub')}
         </p>
       </div>

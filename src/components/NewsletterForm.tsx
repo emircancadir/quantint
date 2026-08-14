@@ -57,14 +57,14 @@ export default function NewsletterForm() {
           placeholder={t('newsPh')}
           style={{
             flex: 1,
-            border: '1px solid #DCE1E8',
+            border: '1px solid var(--q-line-soft)',
             borderRadius: '9px',
             padding: '13px 16px',
             fontSize: '15px',
             fontFamily: 'var(--font-plex-sans), sans-serif',
-            background: '#FBFCFD',
+            background: 'var(--q-surface-soft)',
             outline: 'none',
-            color: '#101820',
+            color: 'var(--q-ink)',
             minWidth: '200px',
           }}
         />
@@ -73,7 +73,7 @@ export default function NewsletterForm() {
           disabled={pending}
           className="q-subscribe-btn"
           style={{
-            background: '#3168B4',
+            background: 'var(--q-button-bg)',
             color: '#FFFFFF',
             padding: '13px 24px',
             borderRadius: '9px',

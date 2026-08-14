@@ -4,6 +4,7 @@ import Logo from './Logo';
 import Wordmark from './Wordmark';
 import NavLinks from './NavLinks';
 import LanguageToggle from './LanguageToggle';
+import ThemeToggle from './ThemeToggle';
 import UserMenu from './UserMenu';
 
 export default async function Navbar() {
@@ -15,9 +16,9 @@ export default async function Navbar() {
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        background: 'rgba(246,247,249,.88)',
+        background: 'var(--q-nav-bg)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid #E4E8EE',
+        borderBottom: '1px solid var(--q-line)',
       }}
     >
       <div
@@ -67,11 +68,12 @@ export default async function Navbar() {
             style={{
               width: '1px',
               height: '22px',
-              background: '#DCE1E8',
+              background: 'var(--q-line-soft)',
               margin: '0 8px',
             }}
           />
           <LanguageToggle />
+          <ThemeToggle />
           <UserMenu />
           <Link
             href="/#newsletter"
@@ -83,7 +85,7 @@ export default async function Navbar() {
               fontSize: '14.5px',
               fontWeight: 600,
               color: '#FFFFFF',
-              background: '#3168B4',
+              background: 'var(--q-button-bg)',
               whiteSpace: 'nowrap',
             }}
           >

@@ -45,7 +45,7 @@ export default async function LoginPage({
             margin: '0 0 28px',
             fontSize: '14.5px',
             lineHeight: 1.6,
-            color: '#5B6673',
+            color: 'var(--q-muted)',
           }}
         >
           {t('loginSub')}
@@ -55,7 +55,7 @@ export default async function LoginPage({
           style={{
             margin: '24px 0 0',
             fontSize: '14px',
-            color: '#5B6673',
+            color: 'var(--q-muted)',
             textAlign: 'center',
           }}
         >

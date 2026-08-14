@@ -33,6 +33,7 @@ export default function HeroCanvas() {
     const W = cv.width;
     const H = cv.height;
     const N = mob ? 26 : 46;
+    let isDark = document.documentElement.dataset.theme === 'dark';
 
     const pts = Array.from({ length: N }, (_, i) => ({
       x: Math.random() * W,
@@ -54,7 +55,7 @@ export default function HeroCanvas() {
       ctx.clearRect(0, 0, W, H);
 
       // grid
-      ctx.strokeStyle = 'rgba(16,24,32,.05)';
+      ctx.strokeStyle = isDark ? 'rgba(237,243,248,.07)' : 'rgba(16,24,32,.05)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let gx = 0; gx <= W; gx += W / 8) {
@@ -79,7 +80,7 @@ export default function HeroCanvas() {
         if (i) ctx.lineTo(x, y);
         else ctx.moveTo(x, y);
       });
-      ctx.strokeStyle = 'rgba(49,104,180,.55)';
+      ctx.strokeStyle = isDark ? 'rgba(120,170,240,.72)' : 'rgba(49,104,180,.55)';
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
@@ -102,7 +103,9 @@ export default function HeroCanvas() {
       for (let b = 0; b < 3; b++) {
         const sg = seg[b];
         if (!sg.length) continue;
-        ctx.strokeStyle = `rgba(16,24,32,${alphas[b]})`;
+        ctx.strokeStyle = isDark
+          ? `rgba(237,243,248,${alphas[b] * 1.35})`
+          : `rgba(16,24,32,${alphas[b]})`;
         ctx.beginPath();
         for (let k = 0; k < sg.length; k += 2) {
           ctx.moveTo(pts[sg[k]].x, pts[sg[k]].y);
@@ -119,7 +122,9 @@ export default function HeroCanvas() {
         if (p.y < 0 || p.y > H) p.vy *= -1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.blue ? 'rgba(49,104,180,.9)' : 'rgba(16,24,32,.75)';
+        ctx.fillStyle = p.blue
+          ? (isDark ? 'rgba(120,170,240,.95)' : 'rgba(49,104,180,.9)')
+          : (isDark ? 'rgba(237,243,248,.78)' : 'rgba(16,24,32,.75)');
         ctx.fill();
       }
     };
@@ -149,7 +154,12 @@ export default function HeroCanvas() {
     io.observe(cv);
 
     const onVisibility = () => (document.hidden ? stop() : start());
+    const onTheme = () => {
+      isDark = document.documentElement.dataset.theme === 'dark';
+      if (raf === null) draw();
+    };
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('quantint-theme-change', onTheme);
 
     draw(); // one static frame immediately
     start();
@@ -158,6 +168,7 @@ export default function HeroCanvas() {
       stop();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('quantint-theme-change', onTheme);
     };
   }, []);
 

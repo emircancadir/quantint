@@ -5,20 +5,20 @@ import { useEffect, useRef, useState } from 'react';
 type Dot = {
   x: number;
   y: number;
-  color: '#101820' | '#3168B4';
+  color: string;
 };
 
 // The exact 64 × 64 geometry used by the navbar logo.
 const DOTS: Dot[] = [
-  { x: 30, y: 5, color: '#101820' },
-  { x: 47.7, y: 12.3, color: '#101820' },
-  { x: 55, y: 30, color: '#101820' },
-  { x: 30, y: 55, color: '#101820' },
-  { x: 12.3, y: 47.7, color: '#101820' },
-  { x: 5, y: 30, color: '#101820' },
-  { x: 12.3, y: 12.3, color: '#101820' },
-  { x: 47.7, y: 47.7, color: '#3168B4' },
-  { x: 59.1, y: 59.1, color: '#3168B4' },
+  { x: 30, y: 5, color: 'var(--q-ink)' },
+  { x: 47.7, y: 12.3, color: 'var(--q-ink)' },
+  { x: 55, y: 30, color: 'var(--q-ink)' },
+  { x: 30, y: 55, color: 'var(--q-ink)' },
+  { x: 12.3, y: 47.7, color: 'var(--q-ink)' },
+  { x: 5, y: 30, color: 'var(--q-ink)' },
+  { x: 12.3, y: 12.3, color: 'var(--q-ink)' },
+  { x: 47.7, y: 47.7, color: 'var(--q-blue)' },
+  { x: 59.1, y: 59.1, color: 'var(--q-blue)' },
 ];
 
 const DOT_STARTS = [
@@ -421,7 +421,7 @@ export default function Splash() {
         inset: 0,
         zIndex: 200,
         overflow: 'hidden',
-        background: '#F6F7F9',
+        background: 'var(--q-bg)',
         pointerEvents: 'auto',
         willChange: 'opacity',
       }}
@@ -475,7 +475,7 @@ export default function Splash() {
             style={{
               display: 'flex',
               alignItems: 'baseline',
-              color: '#101820',
+              color: 'var(--q-ink)',
               fontFamily: 'var(--font-plex-sans), IBM Plex Sans, sans-serif',
               fontSize: 'clamp(40px, 5vw, 60px)',
               fontWeight: 600,
@@ -492,7 +492,7 @@ export default function Splash() {
               ref={periodRef}
               style={{
                 display: 'inline-block',
-                color: '#3168B4',
+                color: 'var(--q-blue)',
                 opacity: 0,
                 transform: 'scale(.7)',
                 transformOrigin: '50% 80%',

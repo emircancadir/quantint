@@ -44,7 +44,7 @@ export default async function RegisterPage({
             margin: '0 0 28px',
             fontSize: '14.5px',
             lineHeight: 1.6,
-            color: '#5B6673',
+            color: 'var(--q-muted)',
           }}
         >
           {t('registerSub')}
@@ -54,7 +54,7 @@ export default async function RegisterPage({
           style={{
             margin: '24px 0 0',
             fontSize: '14px',
-            color: '#5B6673',
+            color: 'var(--q-muted)',
             textAlign: 'center',
           }}
         >
